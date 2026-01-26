@@ -75,7 +75,7 @@ export const pdfAPI = {
             responseType: 'blob',
         });
 
-        return response.data;
+        return response;
     },
 
     split: async (file: File, options: { pages?: string }) => {
