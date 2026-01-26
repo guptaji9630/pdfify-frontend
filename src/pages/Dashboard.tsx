@@ -45,19 +45,19 @@ export default function DashboardPage() {
                 <h2 className="text-3xl font-bold mb-8">Welcome back, {user.name || 'User'}!</h2>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+                    <div onClick={() => navigate('/tools/merge')} className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
                         <div className="text-4xl mb-4">📄</div>
                         <h3 className="text-xl font-bold mb-2">Merge PDFs</h3>
                         <p className="text-slate-600">Combine multiple PDFs into one</p>
                     </div>
 
-                    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+                    <div onClick={() => navigate('/tools/compress')} className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
                         <div className="text-4xl mb-4">⚡</div>
                         <h3 className="text-xl font-bold mb-2">Compress PDF</h3>
                         <p className="text-slate-600">Reduce file size intelligently</p>
                     </div>
 
-                    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+                    <div onClick={() => navigate('/tools/split')} className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
                         <div className="text-4xl mb-4">✂️</div>
                         <h3 className="text-xl font-bold mb-2">Split PDF</h3>
                         <p className="text-slate-600">Extract specific pages</p>

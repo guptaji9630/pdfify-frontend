@@ -3,6 +3,9 @@ import HomePage from './pages/Home';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
 import DashboardPage from './pages/Dashboard';
+import MergePage from './pages/tools/Merge';
+import CompressPage from './pages/tools/Compress';
+import SplitPage from './pages/tools/Split';
 
 function App() {
     return (
@@ -12,7 +15,9 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/dashboard" element={<DashboardPage />} />
-                {/* Tool routes will be added here */}
+                <Route path="/tools/merge" element={<MergePage />} />
+                <Route path="/tools/compress" element={<CompressPage />} />
+                <Route path="/tools/split" element={<SplitPage />} />
             </Routes>
         </div>
     );
