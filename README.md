@@ -47,34 +47,6 @@ pnpm dev
 
 Frontend will start at http://localhost:5173
 
-## 🏗️ Project Structure
-
-```
-pdfify-frontend/
-├── src/
-│   ├── components/        # Reusable UI components
-│   │   ├── ui/           # Shadcn/ui components
-│   │   └── shared/       # Common components (Header, Footer)
-│   ├── pages/             # Page components
-│   │   ├── Home.tsx
-│   │   ├── Login.tsx
-│   │   ├── Register.tsx
-│   │   └── Dashboard.tsx
-│   ├── lib/
-│   │   ├── api.ts         # API client (Axios)
-│   │   └── utils.ts       # Utility functions
-│   ├── store/
-│   │   └── authStore.ts   # Zustand auth store
-│   ├── types/
-│   │   └── index.ts       # TypeScript types
-│   ├── App.tsx            # Main app component
-│   └── main.tsx           # Entry point
-├── index.html
-├── vite.config.ts
-├── tailwind.config.js
-└── package.json
-```
-
 ## 🎨 Adding Shadcn/ui Components
 
 PDFify uses Shadcn/ui for UI components. To add a new component:
@@ -85,53 +57,6 @@ npx shadcn-ui@latest add card
 npx shadcn-ui@latest add dialog
 ```
 
-## 🔐 Authentication Flow
-
-1. User registers/logs in
-2. JWT token received from backend
-3. Token stored in LocalStorage + Zustand
-4. Token added to all API requests via Axios interceptor
-5. Protected routes check auth state
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
-
-# Set environment variables in Vercel dashboard:
-# VITE_API_URL=https://your-backend.railway.app
-# VITE_RAZORPAY_KEY_ID=rzp_live_xxxxx
-
-# Production deployment
-vercel --prod
-```
-
-### Netlify
-
-```bash
-# Install Netlify CLI
-npm i -g netlify-cli
-
-# Build
-pnpm build
-
-# Deploy
-netlify deploy --prod --dir=dist
-```
-
-### Cloudflare Pages
-
-Push to GitHub and connect repository in Cloudflare Pages dashboard.
-
-Build settings:
-- Build command: `pnpm build`
-- Build output: `dist`
 
 ## 📝 Available Scripts
 
