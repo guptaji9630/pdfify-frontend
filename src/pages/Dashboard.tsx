@@ -1,10 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import MergePdfModal from '../components/MergePdfModal';
+import CompressPdfModal from '../components/CompressPdfModal';
+import SplitPdfModal from '../components/SplitPdfModal';
 
 export default function DashboardPage() {
     const navigate = useNavigate();
     const { user, isAuthenticated, logout } = useAuthStore();
+    const [mergeModalOpen, setMergeModalOpen] = useState(false);
+    const [compressModalOpen, setCompressModalOpen] = useState(false);
+    const [splitModalOpen, setSplitModalOpen] = useState(false);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -45,19 +51,28 @@ export default function DashboardPage() {
                 <h2 className="text-3xl font-bold mb-8">Welcome back, {user.name || 'User'}!</h2>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+                    <div 
+                        onClick={() => setMergeModalOpen(true)}
+                        className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+                    >
                         <div className="text-4xl mb-4">📄</div>
                         <h3 className="text-xl font-bold mb-2">Merge PDFs</h3>
                         <p className="text-slate-600">Combine multiple PDFs into one</p>
                     </div>
 
-                    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+                    <div 
+                        onClick={() => setCompressModalOpen(true)}
+                        className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+                    >
                         <div className="text-4xl mb-4">⚡</div>
                         <h3 className="text-xl font-bold mb-2">Compress PDF</h3>
                         <p className="text-slate-600">Reduce file size intelligently</p>
                     </div>
 
-                    <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+                    <div 
+                        onClick={() => setSplitModalOpen(true)}
+                        className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+                    >
                         <div className="text-4xl mb-4">✂️</div>
                         <h3 className="text-xl font-bold mb-2">Split PDF</h3>
                         <p className="text-slate-600">Extract specific pages</p>
@@ -88,6 +103,20 @@ export default function DashboardPage() {
                     )}
                 </div>
             </main>
+
+            {/* Modals */}
+            <MergePdfModal 
+                isOpen={mergeModalOpen} 
+                onClose={() => setMergeModalOpen(false)} 
+            />
+            <CompressPdfModal 
+                isOpen={compressModalOpen} 
+                onClose={() => setCompressModalOpen(false)} 
+            />
+            <SplitPdfModal 
+                isOpen={splitModalOpen} 
+                onClose={() => setSplitModalOpen(false)} 
+            />
         </div>
     );
 }
