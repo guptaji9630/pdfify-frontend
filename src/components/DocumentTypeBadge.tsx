@@ -15,14 +15,16 @@ const typeConfig: Record<string, { label: string; color: string; bgColor: string
 };
 
 export default function DocumentTypeBadge({ type, confidence }: DocumentTypeBadgeProps) {
-    const config = typeConfig[type.toLowerCase()] || typeConfig.other;
+    // Handle null/undefined type values safely
+    const safeType = type?.toLowerCase() || 'other';
+    const config = typeConfig[safeType] || typeConfig.other;
 
     return (
         <div className="inline-flex items-center gap-2">
             <span className={`px-3 py-1 rounded-full text-sm font-semibold ${config.bgColor} ${config.color}`}>
                 {config.label}
             </span>
-            {confidence && (
+            {confidence !== undefined && confidence !== null && (
                 <span className="text-xs text-slate-500">
                     {(confidence * 100).toFixed(0)}% confidence
                 </span>

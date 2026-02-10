@@ -6,6 +6,8 @@ import CompressPdfModal from '../components/CompressPdfModal';
 import SplitPdfModal from '../components/SplitPdfModal';
 import ClassifyPdfModal from '../components/ClassifyPdfModal';
 import SummarizePdfModal from '../components/SummarizePdfModal';
+import ExtractDataModal from '../components/ExtractDataModal';
+import TranslatePdfModal from '../components/TranslatePdfModal';
 
 export default function DashboardPage() {
     const navigate = useNavigate();
@@ -15,6 +17,9 @@ export default function DashboardPage() {
     const [splitModalOpen, setSplitModalOpen] = useState(false);
     const [classifyModalOpen, setClassifyModalOpen] = useState(false);
     const [summarizeModalOpen, setSummarizeModalOpen] = useState(false);
+    const [extractDataModalOpen, setExtractDataModalOpen] = useState(false);
+    const [translateModalOpen, setTranslateModalOpen] = useState(false);
+    const [preSelectedFile, setPreSelectedFile] = useState<File | null>(null);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -25,6 +30,21 @@ export default function DashboardPage() {
     const handleLogout = () => {
         logout();
         navigate('/');
+    };
+
+    const handleActionSelect = (action: string, file: File) => {
+        setPreSelectedFile(file);
+        
+        // Map actions to modals
+        const actionLower = action.toLowerCase();
+        
+        if (actionLower === 'summarize') {
+            setSummarizeModalOpen(true);
+        } else if (actionLower === 'extract data' || actionLower === 'extract_data') {
+            setExtractDataModalOpen(true);
+        } else if (actionLower === 'translate') {
+            setTranslateModalOpen(true);
+        }
     };
 
     if (!user) return null;
@@ -82,10 +102,8 @@ export default function DashboardPage() {
                         <p className="text-slate-600">Extract specific pages</p>
                     </div>
 
-                    {/* AI Features - Temporarily shown for all users for testing */}
-                    {/* TODO: Restore subscription check when billing is implemented */}
-                    {/* Original: {user.subscription?.plan !== 'FREE' && ( */}
-                    {true && (
+                    {/* AI Features - Premium Only */}
+                    {user.subscription?.plan && user.subscription.plan !== 'FREE' && (
                         <>
                             <div 
                                 onClick={() => setClassifyModalOpen(true)}
@@ -107,11 +125,18 @@ export default function DashboardPage() {
                         </>
                     )}
 
-                    {user.subscription?.plan === 'FREE' && (
+                    {/* Upgrade Card - Free Users Only */}
+                    {(!user.subscription?.plan || user.subscription.plan === 'FREE') && (
                         <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer text-white">
                             <div className="text-4xl mb-4">⭐</div>
                             <h3 className="text-xl font-bold mb-2">Upgrade to Pro</h3>
                             <p className="text-white/90">Unlock AI features for ₹99/mo</p>
+                            <ul className="mt-3 space-y-1 text-sm text-white/80">
+                                <li>✓ AI Document Classification</li>
+                                <li>✓ AI Summarization</li>
+                                <li>✓ AI Data Extraction</li>
+                                <li>✓ AI Translation (27+ languages)</li>
+                            </ul>
                         </div>
                     )}
                 </div>
@@ -132,11 +157,32 @@ export default function DashboardPage() {
             />
             <ClassifyPdfModal 
                 isOpen={classifyModalOpen} 
-                onClose={() => setClassifyModalOpen(false)} 
+                onClose={() => setClassifyModalOpen(false)}
+                onActionSelect={handleActionSelect}
             />
             <SummarizePdfModal 
                 isOpen={summarizeModalOpen} 
-                onClose={() => setSummarizeModalOpen(false)} 
+                onClose={() => {
+                    setSummarizeModalOpen(false);
+                    setPreSelectedFile(null);
+                }}
+                preSelectedFile={preSelectedFile}
+            />
+            <ExtractDataModal 
+                isOpen={extractDataModalOpen} 
+                onClose={() => {
+                    setExtractDataModalOpen(false);
+                    setPreSelectedFile(null);
+                }}
+                preSelectedFile={preSelectedFile}
+            />
+            <TranslatePdfModal 
+                isOpen={translateModalOpen} 
+                onClose={() => {
+                    setTranslateModalOpen(false);
+                    setPreSelectedFile(null);
+                }}
+                preSelectedFile={preSelectedFile}
             />
         </div>
     );

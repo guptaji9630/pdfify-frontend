@@ -116,6 +116,36 @@ export const aiAPI = {
 
         return response.data;
     },
+
+    extractData: async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await api.post('/api/ai/extract-data', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        return response.data;
+    },
+
+    translate: async (file: File, targetLanguage: string, outputFormat: 'text' | 'pdf' = 'text') => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // Backend expects language as query parameter
+        const params = new URLSearchParams();
+        params.append('language', targetLanguage);
+        if (outputFormat === 'pdf') {
+            params.append('outputFormat', 'pdf');
+        }
+
+        const response = await api.post(`/api/ai/translate?${params.toString()}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            responseType: outputFormat === 'pdf' ? 'blob' : 'json',
+        });
+
+        return response.data;
+    },
 };
 
 // ==================== Billing API ====================

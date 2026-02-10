@@ -5,6 +5,7 @@ import DocumentTypeBadge from './DocumentTypeBadge';
 interface ClassifyPdfModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onActionSelect?: (action: string, file: File) => void;
 }
 
 interface ClassificationResult {
@@ -13,7 +14,7 @@ interface ClassificationResult {
     suggestions?: string[];
 }
 
-export default function ClassifyPdfModal({ isOpen, onClose }: ClassifyPdfModalProps) {
+export default function ClassifyPdfModal({ isOpen, onClose, onActionSelect }: ClassifyPdfModalProps) {
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -39,10 +40,68 @@ export default function ClassifyPdfModal({ isOpen, onClose }: ClassifyPdfModalPr
         setError('');
 
         try {
-            const data = await aiAPI.classify(file);
-            setResult(data);
+            const response = await aiAPI.classify(file);
+            
+            // Log the actual response for debugging
+            console.log('API Response:', response);
+            
+            // Validate API response structure
+            if (!response || typeof response !== 'object') {
+                throw new Error('Invalid response from server');
+            }
+            
+            // Handle different possible response formats
+            let data = response;
+            
+            // Check if data is nested (common backend pattern)
+            if (response.data && typeof response.data === 'object') {
+                data = response.data;
+            } else if (response.result && typeof response.result === 'object') {
+                data = response.result;
+            }
+            
+            // Extract type from various possible property names
+            const type = data.type || data.document_type || data.documentType || data.classification;
+            
+            if (!type) {
+                console.error('Response structure:', data);
+                throw new Error(`Classification result missing document type. Received: ${JSON.stringify(data)}`);
+            }
+            
+            // Extract confidence and suggestions with fallbacks
+            const confidence = data.confidence || data.score || 0;
+            const suggestions = Array.isArray(data.suggestions) 
+                ? data.suggestions 
+                : Array.isArray(data.recommended_actions)
+                ? data.recommended_actions
+                : [];
+            
+            // Ensure suggestions is an array (even if empty)
+            const validatedData = {
+                type: String(type).toLowerCase(),
+                confidence: typeof confidence === 'number' ? confidence : parseFloat(confidence) || 0,
+                suggestions: suggestions
+            };
+            
+            console.log('Validated data:', validatedData);
+            setResult(validatedData);
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to classify document');
+            console.error('Classification error:', err);
+            let errorMessage = 'Failed to classify document';
+            
+            if (err.message) {
+                errorMessage = err.message;
+            } else if (err.response?.data?.error) {
+                errorMessage = err.response.data.error;
+            } else if (err.response?.status === 500) {
+                errorMessage = 'Server error. Please try again later.';
+            } else if (err.response?.status === 400) {
+                errorMessage = 'Invalid PDF file. Please check the file and try again.';
+            } else if (!navigator.onLine) {
+                errorMessage = 'No internet connection. Please check your network.';
+            }
+            
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -129,35 +188,51 @@ export default function ClassifyPdfModal({ isOpen, onClose }: ClassifyPdfModalPr
                             <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-6 space-y-4">
                                 <div>
                                     <p className="text-sm text-slate-600 mb-2">Document Type</p>
-                                    <DocumentTypeBadge
-                                        type={result.type}
-                                        confidence={result.confidence}
-                                    />
+                                    {result.type ? (
+                                        <DocumentTypeBadge
+                                            type={result.type}
+                                            confidence={result.confidence}
+                                        />
+                                    ) : (
+                                        <p className="text-sm text-slate-500">Type not detected</p>
+                                    )}
                                 </div>
 
                                 <div>
                                     <p className="text-sm text-slate-600 mb-1">File</p>
-                                    <p className="text-sm font-medium text-slate-900">{file?.name}</p>
+                                    <p className="text-sm font-medium text-slate-900">{file?.name || 'Unknown'}</p>
                                 </div>
 
-                                {result.suggestions && result.suggestions.length > 0 && (
+                                {result.suggestions && Array.isArray(result.suggestions) && result.suggestions.length > 0 && (
                                     <div>
                                         <p className="text-sm font-medium text-slate-700 mb-2">
                                             Suggested Actions
                                         </p>
                                         <ul className="space-y-2">
                                             {result.suggestions.map((suggestion, index) => (
-                                                <li
-                                                    key={index}
-                                                    className="text-sm text-slate-600 flex items-center gap-2"
-                                                >
-                                                    <span className="text-purple-500">→</span>
-                                                    <span className="capitalize">
-                                                        {suggestion.replace(/_/g, ' ')}
-                                                    </span>
-                                                </li>
+                                                suggestion && (
+                                                    <li
+                                                        key={index}
+                                                        onClick={() => {
+                                                            if (file && onActionSelect) {
+                                                                const action = String(suggestion).toLowerCase();
+                                                                onActionSelect(action, file);
+                                                                handleClose();
+                                                            }
+                                                        }}
+                                                        className="text-sm text-slate-600 flex items-center gap-2 cursor-pointer hover:bg-purple-50 p-2 rounded-lg transition-colors group"
+                                                    >
+                                                        <span className="text-purple-500 group-hover:text-purple-700">→</span>
+                                                        <span className="capitalize group-hover:text-purple-700 group-hover:font-medium">
+                                                            {String(suggestion).replace(/_/g, ' ')}
+                                                        </span>
+                                                    </li>
+                                                )
                                             ))}
                                         </ul>
+                                        <p className="text-xs text-slate-500 mt-2 italic">
+                                            💡 Click on any action to perform it with this document
+                                        </p>
                                     </div>
                                 )}
                             </div>
