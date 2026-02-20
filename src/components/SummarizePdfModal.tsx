@@ -1,27 +1,29 @@
 import { useState, useEffect } from 'react';
-import { aiAPI } from '../lib/api';
+import { aiAPI, documentAPI } from '../lib/api';
 import SummaryDisplay from './SummaryDisplay';
 
 interface SummarizePdfModalProps {
     isOpen: boolean;
     onClose: () => void;
     preSelectedFile?: File | null;
+    documentId?: string;  // NEW: Support for stored documents
 }
 
-export default function SummarizePdfModal({ isOpen, onClose, preSelectedFile }: SummarizePdfModalProps) {
+export default function SummarizePdfModal({ isOpen, onClose, preSelectedFile, documentId }: SummarizePdfModalProps) {
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [summary, setSummary] = useState<any>(null);
     
-    // Handle pre-selected file from classification
+    // Handle pre-selected file from classification or documentId
     useEffect(() => {
         if (isOpen && preSelectedFile) {
             setFile(preSelectedFile);
-            // Auto-summarize if file is pre-selected
             handleSummarizeFile(preSelectedFile);
+        } else if (isOpen && documentId) {
+            handleSummarizeDocument();
         }
-    }, [isOpen, preSelectedFile]);
+    }, [isOpen, preSelectedFile, documentId]);
 
     if (!isOpen) return null;
 
@@ -30,6 +32,33 @@ export default function SummarizePdfModal({ isOpen, onClose, preSelectedFile }: 
             setFile(e.target.files[0]);
             setError('');
             setSummary(null);
+        }
+    };
+
+    // NEW: Summarize stored document
+    const handleSummarizeDocument = async () => {
+        if (!documentId) return;
+
+        setLoading(true);
+        setError('');
+
+        try {
+            const response = await documentAPI.summarizeDocument(documentId, 'medium');
+            console.log('Summarize Document API Response:', response);
+            
+            let summaryData;
+            if (response.data.success && response.data.data) {
+                summaryData = response.data.data;
+            } else {
+                summaryData = response.data;
+            }
+            
+            setSummary(summaryData);
+        } catch (err: any) {
+            console.error('Summarization error:', err);
+            setError(err.response?.data?.error || 'Failed to summarize document');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -69,11 +98,13 @@ export default function SummarizePdfModal({ isOpen, onClose, preSelectedFile }: 
     };
     
     const handleSummarize = async () => {
-        if (!file) {
+        if (documentId) {
+            await handleSummarizeDocument();
+        } else if (file) {
+            await handleSummarizeFile(file);
+        } else {
             setError('Please select a PDF file');
-            return;
         }
-        await handleSummarizeFile(file);
     };
 
     const handleReset = () => {

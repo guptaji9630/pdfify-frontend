@@ -1,38 +1,43 @@
 import { useState, useEffect } from 'react';
-import { aiAPI } from '../lib/api';
+import { aiAPI, documentAPI } from '../lib/api';
 
 interface TranslatePdfModalProps {
     isOpen: boolean;
     onClose: () => void;
     preSelectedFile?: File | null;
+    documentId?: string;  // NEW: Support for stored documents
 }
 
-const LANGUAGES = [
-    { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-    { code: 'fr', name: 'French', flag: '🇫🇷' },
-    { code: 'de', name: 'German', flag: '🇩🇪' },
-    { code: 'it', name: 'Italian', flag: '🇮🇹' },
-    { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
-    { code: 'ru', name: 'Russian', flag: '🇷🇺' },
-    { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
-    { code: 'ko', name: 'Korean', flag: '🇰🇷' },
-    { code: 'zh', name: 'Chinese', flag: '🇨🇳' },
-    { code: 'ar', name: 'Arabic', flag: '🇸🇦' },
-    { code: 'hi', name: 'Hindi', flag: '🇮🇳' },
-    { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
-    { code: 'pl', name: 'Polish', flag: '🇵🇱' },
-    { code: 'tr', name: 'Turkish', flag: '🇹🇷' },
-    { code: 'sv', name: 'Swedish', flag: '🇸🇪' },
-];
-
-export default function TranslatePdfModal({ isOpen, onClose, preSelectedFile }: TranslatePdfModalProps) {
+export default function TranslatePdfModal({ isOpen, onClose, preSelectedFile, documentId }: TranslatePdfModalProps) {
     const [file, setFile] = useState<File | null>(null);
-    const [targetLanguage, setTargetLanguage] = useState('es');
-    const [outputFormat, setOutputFormat] = useState<'text' | 'pdf'>('text');
+    const [targetLanguage, setTargetLanguage] = useState('Spanish');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [translatedText, setTranslatedText] = useState<string | null>(null);
     const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
+    const [supportedLanguages, setSupportedLanguages] = useState<string[]>([]);
+    const [loadingLanguages, setLoadingLanguages] = useState(true);
+
+    // Fetch supported languages
+    useEffect(() => {
+        const fetchLanguages = async () => {
+            try {
+                const response = await aiAPI.getSupportedLanguages();
+                if (response.data.success && response.data.data) {
+                    setSupportedLanguages(response.data.data.languages);
+                } else if (response.data.languages) {
+                    setSupportedLanguages(response.data.languages);
+                }
+            } catch (err) {
+                console.error('Failed to load languages:', err);
+                // Fallback to default languages
+                setSupportedLanguages(['Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Arabic', 'Hindi']);
+            } finally {
+                setLoadingLanguages(false);
+            }
+        };
+        fetchLanguages();
+    }, []);
 
     useEffect(() => {
         if (isOpen && preSelectedFile) {
@@ -51,47 +56,67 @@ export default function TranslatePdfModal({ isOpen, onClose, preSelectedFile }: 
     };
 
     const handleTranslate = async () => {
-        if (!file) {
+        if (documentId) {
+            await handleTranslateDocument();
+        } else if (file) {
+            await handleTranslateFile();
+        } else {
             setError('Please select a PDF file');
-            return;
         }
+    };
+
+    // NEW: Translate stored document
+    const handleTranslateDocument = async () => {
+        if (!documentId) return;
 
         setLoading(true);
         setError('');
 
         try {
-            const response = await aiAPI.translate(file, targetLanguage, outputFormat);
+            const response = await documentAPI.translateDocument(documentId, targetLanguage);
+            console.log('Translate Document API Response:', response);
+
+            let data = response.data;
+            if (data.success && data.data) {
+                data = data.data;
+            }
+
+            setTranslatedText(data.translatedText || data.text);
+            setDetectedLanguage(data.originalLanguage || data.sourceLanguage);
+        } catch (err: any) {
+            console.error('Translation error:', err);
+            setError(err.response?.data?.error || 'Failed to translate document');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleTranslateFile = async () => {
+        if (!file) return;
+
+        setLoading(true);
+        setError('');
+
+        try {
+            const response = await aiAPI.translate(file, targetLanguage, 'text');
             console.log('Translate API Response:', response);
 
-            if (outputFormat === 'pdf') {
-                // Download PDF
-                const blob = new Blob([response], { type: 'application/pdf' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${file.name.replace('.pdf', '')}_translated_${targetLanguage}.pdf`;
-                a.click();
-                window.URL.revokeObjectURL(url);
-                handleClose();
-            } else {
-                // Display text
-                let data = response;
-                if (response.success && response.data) {
-                    data = response.data;
-                }
-                
-                const translated = data.translatedText || data.text || '';
-                
-                // Check if translation is empty
-                if (!translated || translated.trim() === '') {
-                    throw new Error(
-                        `Translation completed but no text returned. Backend returned: ${JSON.stringify(data)}`
-                    );
-                }
-                
-                setTranslatedText(translated);
-                setDetectedLanguage(data.originalLanguage || data.detectedLanguage || data.sourceLanguage);
+            let data = response;
+            if (response.success && response.data) {
+                data = response.data;
             }
+
+            const translated = data.translatedText || data.text || '';
+            
+            // Check if translation is empty
+            if (!translated || translated.trim() === '') {
+                throw new Error(
+                    `Translation completed but no text returned. Backend returned: ${JSON.stringify(data)}`
+                );
+            }
+            
+            setTranslatedText(translated);
+            setDetectedLanguage(data.originalLanguage || data.detectedLanguage || data.sourceLanguage);
         } catch (err: any) {
             console.error('Translation error:', err);
             console.error('Error response:', err.response?.data);
@@ -145,7 +170,7 @@ export default function TranslatePdfModal({ isOpen, onClose, preSelectedFile }: 
                 <div className="space-y-4">
                     {!translatedText ? (
                         <>
-                            {!preSelectedFile && (
+                            {!preSelectedFile && !documentId && (
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Select PDF file
@@ -162,7 +187,15 @@ export default function TranslatePdfModal({ isOpen, onClose, preSelectedFile }: 
                                 </div>
                             )}
 
-                            {preSelectedFile && (
+                            {documentId && (
+                                <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3">
+                                    <p className="text-sm font-medium text-cyan-700">
+                                        📄 Translating stored document
+                                    </p>
+                                </div>
+                            )}
+
+                            {preSelectedFile && !documentId && (
                                 <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3">
                                     <p className="text-sm font-medium text-cyan-700 mb-1">
                                         📄 Auto-selected from classification:
@@ -183,46 +216,22 @@ export default function TranslatePdfModal({ isOpen, onClose, preSelectedFile }: 
                                 <label className="block text-sm font-medium text-slate-700 mb-2">
                                     Target Language
                                 </label>
-                                <select
-                                    value={targetLanguage}
-                                    onChange={(e) => setTargetLanguage(e.target.value)}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                                >
-                                    {LANGUAGES.map((lang) => (
-                                        <option key={lang.code} value={lang.code}>
-                                            {lang.flag} {lang.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Output Format */}
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">
-                                    Output Format
-                                </label>
-                                <div className="flex gap-3">
-                                    <button
-                                        onClick={() => setOutputFormat('text')}
-                                        className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
-                                            outputFormat === 'text'
-                                                ? 'bg-cyan-600 text-white'
-                                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                                        }`}
+                                {loadingLanguages ? (
+                                    <div className="text-sm text-slate-500">Loading languages...</div>
+                                ) : (
+                                    <select
+                                        value={targetLanguage}
+                                        onChange={(e) => setTargetLanguage(e.target.value)}
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                                        disabled={loading}
                                     >
-                                        📝 Text
-                                    </button>
-                                    <button
-                                        onClick={() => setOutputFormat('pdf')}
-                                        className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
-                                            outputFormat === 'pdf'
-                                                ? 'bg-cyan-600 text-white'
-                                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                                        }`}
-                                    >
-                                        📄 PDF
-                                    </button>
-                                </div>
+                                        {supportedLanguages.map((lang) => (
+                                            <option key={lang} value={lang}>
+                                                {lang}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
                             </div>
 
                             {error && (
@@ -234,7 +243,7 @@ export default function TranslatePdfModal({ isOpen, onClose, preSelectedFile }: 
                             <div className="flex gap-3">
                                 <button
                                     onClick={handleTranslate}
-                                    disabled={loading || !file}
+                                    disabled={loading || (!file && !documentId) || loadingLanguages}
                                     className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:from-cyan-700 hover:to-blue-700 disabled:from-slate-300 disabled:to-slate-300 disabled:cursor-not-allowed"
                                 >
                                     {loading ? (
