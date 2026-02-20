@@ -69,8 +69,8 @@ export default function SignatureApplicationModal({
                 pageNumber,
                 x: xPosition,
                 y: yPosition,
-                width: signatureWidth,
-                height: signatureHeight,
+                width: signatureWidth ?? selectedSignature.width ?? 180,
+                height: signatureHeight ?? selectedSignature.height ?? 70,
             });
             alert('Signature applied successfully!');
             onSignatureApplied();
