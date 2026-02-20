@@ -20,7 +20,9 @@ export default function DocumentsPage() {
         try {
             setLoading(true);
             const response = await documentAPI.list(filters);
-            setDocuments(response.data.data);
+            // Backend: { data: { documents: [...], pagination: {...} } }
+            const raw = response.data?.data?.documents ?? response.data?.data ?? response.data ?? [];
+            setDocuments(Array.isArray(raw) ? raw : []);
         } catch (error: any) {
             console.error('Error fetching documents:', error);
         } finally {
@@ -40,16 +42,24 @@ export default function DocumentsPage() {
         }
     };
 
+    /**
+     * Download via signed GCS URL returned by the backend.
+     * Backend returns { data: { downloadUrl, filename, expiresIn } } — open it directly.
+     */
     const handleDownload = async (docId: string, title: string) => {
         try {
             const response = await documentAPI.download(docId);
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `${title}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+            const downloadUrl = response.data?.data?.downloadUrl;
+            if (!downloadUrl) throw new Error('No download URL returned');
+
+            const a = window.document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `${title}.pdf`;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            window.document.body.appendChild(a);
+            a.click();
+            window.document.body.removeChild(a);
         } catch (error: any) {
             console.error('Error downloading document:', error);
             alert('Failed to download document');

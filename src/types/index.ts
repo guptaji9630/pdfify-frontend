@@ -10,7 +10,9 @@ export interface Subscription {
     id: string;
     plan: 'FREE' | 'PRO' | 'BUSINESS';
     status: 'ACTIVE' | 'INACTIVE' | 'CANCELLED' | 'EXPIRED';
+    currentPeriodStart?: string;
     currentPeriodEnd?: string;
+    daysRemaining?: number;
 }
 
 export interface ApiResponse<T = any> {
@@ -67,7 +69,7 @@ export interface DocumentVersion {
     versionNumber: number;
     storageUrl: string;
     size: number;
-    changeLog?: string;
+    changeNote?: string;
     createdAt: string;
     createdBy: string;
 }
@@ -184,7 +186,46 @@ export interface RotatePagesData {
     rotation: 90 | 180 | 270;
 }
 
-// ==================== AI Feature Types ====================
+// ==================== Billing Types ====================
+
+export type PlanId = 'FREE' | 'PRO' | 'BUSINESS';
+
+export interface BillingPlan {
+    id: PlanId;
+    name: string;
+    price: number;
+    currency: string;
+    priceInPaise: number;
+    billingPeriod: string;
+    popular?: boolean;
+    features: string[];
+}
+
+export interface BillingSubscription {
+    plan: PlanId;
+    status: 'ACTIVE' | 'INACTIVE' | 'CANCELLED' | 'EXPIRED';
+    currentPeriodStart?: string;
+    currentPeriodEnd?: string;
+    daysRemaining?: number;
+}
+
+export interface RazorpayOrder {
+    orderId: string;
+    amount: number;
+    currency: string;
+    keyId: string;
+    plan: PlanId;
+    planName: string;
+    planPrice: number;
+}
+
+export interface EnterpriseInfo {
+    name: string;
+    description: string;
+    highlights: string[];
+}
+
+
 
 export interface ClassifyResponse {
     type: string;

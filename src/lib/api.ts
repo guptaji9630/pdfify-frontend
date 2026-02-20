@@ -81,17 +81,25 @@ export const pdfAPI = {
         return response.data;
     },
 
-    split: async (file: File, options: { pages?: string }) => {
+    /**
+     * Split a PDF — backend expects `splitPoints` (comma-separated page numbers, e.g. "3,6")
+     * Returns JSON: { data: { files: [{ name, pages, url }] } }
+     */
+    split: async (file: File, splitPoints: string) => {
         const formData = new FormData();
         formData.append('file', file);
-        if (options.pages) formData.append('pages', options.pages);
-
-        const response = await api.post('/api/pdf/split', formData, {
+        formData.append('splitPoints', splitPoints);
+        return api.post('/api/pdf/split', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
-            responseType: 'blob',
         });
+    },
 
-        return response.data;
+    getMetadata: async (file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return api.post('/api/pdf/metadata', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
     },
 };
 
@@ -204,12 +212,37 @@ export const aiAPI = {
 // ==================== Billing API ====================
 
 export const billingAPI = {
-    createSubscription: (plan: 'pro' | 'business') =>
-        api.post('/api/billing/create-subscription', { plan }),
+    /** Public — load plan details for pricing page */
+    getPlans: () => api.get('/api/billing/plans'),
 
-    cancelSubscription: () => api.post('/api/billing/cancel-subscription'),
+    /** Get current user's active subscription */
+    getSubscription: () => api.get('/api/billing/subscription'),
 
-    getPaymentHistory: () => api.get('/api/billing/payments'),
+    /**
+     * Step 1 — Create a Razorpay order.
+     * Returns: { orderId, amount, currency, keyId, plan, planName, planPrice }
+     */
+    createOrder: (plan: 'PRO' | 'BUSINESS') =>
+        api.post('/api/billing/create-order', { plan }),
+
+    /**
+     * Step 2 — Verify Razorpay payment and activate plan.
+     */
+    verifyPayment: (data: {
+        razorpay_order_id: string;
+        razorpay_payment_id: string;
+        razorpay_signature: string;
+        plan: 'PRO' | 'BUSINESS';
+    }) => api.post('/api/billing/verify-payment', data),
+
+    /** Downgrade back to FREE immediately */
+    cancelSubscription: () => api.delete('/api/billing/subscription'),
+
+    /** Enterprise contact form (public) */
+    enterpriseContact: (data: {
+        name: string; email: string; company: string;
+        phone?: string; employees: string; message: string;
+    }) => api.post('/api/billing/enterprise-contact', data),
 };
 
 // ==================== Document Management API ====================
@@ -230,13 +263,16 @@ export const documentAPI = {
         });
     },
     
-    list: (filters?: any) => {
+    list: (filters?: { status?: string; type?: string; tags?: string; search?: string; page?: number; limit?: number }) => {
         const params = new URLSearchParams();
         if (filters?.status) params.append('status', filters.status);
         if (filters?.type) params.append('type', filters.type);
         if (filters?.tags) params.append('tags', filters.tags);
-        
-        return api.get(`/api/documents?${params.toString()}`);
+        if (filters?.search) params.append('search', filters.search);
+        if (filters?.page) params.append('page', String(filters.page));
+        if (filters?.limit) params.append('limit', String(filters.limit));
+        const qs = params.toString();
+        return api.get(`/api/documents${qs ? `?${qs}` : ''}`);
     },
     
     getById: (id: string) => api.get(`/api/documents/${id}`),
@@ -245,8 +281,12 @@ export const documentAPI = {
     
     delete: (id: string) => api.delete(`/api/documents/${id}`),
     
-    download: (id: string) => 
-        api.get(`/api/documents/${id}/download`, { responseType: 'blob' }),
+    /**
+     * Returns a 15-min signed GCS URL — do NOT download as blob.
+     * Response shape: { data: { downloadUrl, filename, expiresIn } }
+     * Usage: open response.data.data.downloadUrl in a new tab.
+     */
+    download: (id: string) => api.get(`/api/documents/${id}/download`),
     
     // Get PDF Page Info
     getPages: (id: string) => 
@@ -290,21 +330,23 @@ export const documentAPI = {
     
     deleteSignature: (id: string) => api.delete(`/api/documents/signatures/${id}`),
     
-    setDefaultSignature: (id: string) => 
-        api.patch(`/api/documents/signatures/${id}/default`, {}),
-    
-    applySignature: (docId: string, data: any) => 
-        api.post(`/api/documents/${docId}/sign`, data),
-    
-    applyMultipleSignatures: (docId: string, signatures: any[]) => 
-        api.post(`/api/documents/${docId}/sign-multiple`, { signatures }),
+    /** POST /api/documents/signatures/:id/default */
+    setDefaultSignature: (id: string) =>
+        api.post(`/api/documents/signatures/${id}/default`, {}),
+
+    /** POST /api/documents/:docId/apply-signature */
+    applySignature: (docId: string, data: {
+        signatureId: string; pageNumber: number;
+        x: number; y: number; width: number; height: number;
+    }) => api.post(`/api/documents/${docId}/apply-signature`, data),
     
     // Version Control
     getVersions: (docId: string) => 
         api.get(`/api/documents/${docId}/versions`),
     
-    restoreVersion: (docId: string, versionNumber: number) => 
-        api.post(`/api/documents/${docId}/versions/restore`, { versionNumber }),
+    /** POST /api/documents/:docId/versions/:versionNumber/restore */
+    restoreVersion: (docId: string, versionNumber: number) =>
+        api.post(`/api/documents/${docId}/versions/${versionNumber}/restore`, {}),
     
     // Annotations
     createAnnotation: (docId: string, data: any) => 
@@ -315,14 +357,15 @@ export const documentAPI = {
         return api.get(`/api/documents/${docId}/annotations${params}`);
     },
     
-    updateAnnotation: (annotationId: string, data: any) => 
-        api.patch(`/api/documents/annotations/${annotationId}`, data),
-    
-    deleteAnnotation: (annotationId: string) => 
-        api.delete(`/api/documents/annotations/${annotationId}`),
-    
-    applyAnnotations: (docId: string) => 
-        api.post(`/api/documents/${docId}/annotations/apply`, {}),
+    updateAnnotation: (docId: string, annotationId: string, data: any) =>
+        api.patch(`/api/documents/${docId}/annotations/${annotationId}`, data),
+
+    deleteAnnotation: (docId: string, annotationId: string) =>
+        api.delete(`/api/documents/${docId}/annotations/${annotationId}`),
+
+    /** Flatten all annotations into the PDF */
+    burnAnnotations: (docId: string) =>
+        api.post(`/api/documents/${docId}/annotations/burn`, {}),
     
     // ==================== AI Features on Stored Documents ====================
     
@@ -331,8 +374,8 @@ export const documentAPI = {
         api.post(`/api/documents/${docId}/ai/classify`, {}),
     
     // AI: Summarize document
-    summarizeDocument: (docId: string, length: 'short' | 'medium' | 'long' = 'medium') => 
-        api.post(`/api/documents/${docId}/ai/summarize?length=${length}`, {}),
+    summarizeDocument: (docId: string, length: 'short' | 'medium' | 'long' = 'medium') =>
+        api.post(`/api/documents/${docId}/ai/summarize`, { length }),
     
     // AI: Executive summary
     executiveSummary: (docId: string) => 

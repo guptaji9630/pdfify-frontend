@@ -62,6 +62,12 @@ export default function DashboardPage() {
                             {user.subscription?.plan || 'FREE'}
                         </span>
                         <button
+                            onClick={() => navigate('/billing')}
+                            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                        >
+                            {user.subscription?.plan === 'FREE' ? 'Upgrade' : 'Manage Plan'}
+                        </button>
+                        <button
                             onClick={handleLogout}
                             className="text-slate-600 hover:text-slate-900"
                         >
@@ -137,40 +143,39 @@ export default function DashboardPage() {
                         <p className="text-slate-600">Extract specific pages</p>
                     </div>
 
-                    {/* AI Features - Premium Only */}
-                    {user.subscription?.plan && user.subscription.plan !== 'FREE' && (
-                        <>
-                            <div 
-                                onClick={() => setClassifyModalOpen(true)}
-                                className="bg-gradient-to-br from-purple-500 to-blue-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer text-white"
-                            >
-                                <div className="text-4xl mb-4">🤖</div>
-                                <h3 className="text-xl font-bold mb-2">AI Classify</h3>
-                                <p className="text-white/90">Auto-detect document type</p>
-                            </div>
+                    {/* AI Features - Classify & Summarize are FREE; rest are PRO+ */}
+                    <div 
+                        onClick={() => setClassifyModalOpen(true)}
+                        className="bg-gradient-to-br from-purple-500 to-blue-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer text-white"
+                    >
+                        <div className="text-4xl mb-4">🤖</div>
+                        <h3 className="text-xl font-bold mb-2">AI Classify</h3>
+                        <p className="text-white/90">Auto-detect document type</p>
+                    </div>
 
-                            <div 
-                                onClick={() => setSummarizeModalOpen(true)}
-                                className="bg-gradient-to-br from-blue-500 to-cyan-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer text-white"
-                            >
-                                <div className="text-4xl mb-4">📝</div>
-                                <h3 className="text-xl font-bold mb-2">AI Summarize</h3>
-                                <p className="text-white/90">Get instant summaries</p>
-                            </div>
-                        </>
-                    )}
+                    <div 
+                        onClick={() => setSummarizeModalOpen(true)}
+                        className="bg-gradient-to-br from-blue-500 to-cyan-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer text-white"
+                    >
+                        <div className="text-4xl mb-4">📝</div>
+                        <h3 className="text-xl font-bold mb-2">AI Summarize</h3>
+                        <p className="text-white/90">Get instant summaries</p>
+                    </div>
 
                     {/* Upgrade Card - Free Users Only */}
                     {(!user.subscription?.plan || user.subscription.plan === 'FREE') && (
-                        <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer text-white">
+                        <div
+                            onClick={() => navigate('/billing')}
+                            className="bg-gradient-to-br from-yellow-400 to-orange-500 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer text-white"
+                        >
                             <div className="text-4xl mb-4">⭐</div>
                             <h3 className="text-xl font-bold mb-2">Upgrade to Pro</h3>
                             <p className="text-white/90">Unlock AI features for ₹99/mo</p>
                             <ul className="mt-3 space-y-1 text-sm text-white/80">
-                                <li>✓ AI Document Classification</li>
-                                <li>✓ AI Summarization</li>
+                                <li>✓ AI Executive Summary</li>
                                 <li>✓ AI Data Extraction</li>
                                 <li>✓ AI Translation (27+ languages)</li>
+                                <li>✓ Q&amp;A Pairs &amp; Action Items</li>
                             </ul>
                         </div>
                     )}

@@ -628,10 +628,16 @@ export default function DocumentViewerPage() {
         if (!id || !document) return;
         try {
             const res = await documentAPI.download(id);
-            const url = URL.createObjectURL(new Blob([res.data]));
+            const downloadUrl = res.data?.data?.downloadUrl;
+            if (!downloadUrl) throw new Error('No download URL');
             const a = window.document.createElement('a');
-            a.href = url; a.download = `${document.title}.pdf`; a.click();
-            URL.revokeObjectURL(url);
+            a.href = downloadUrl;
+            a.download = `${document.title}.pdf`;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            window.document.body.appendChild(a);
+            a.click();
+            window.document.body.removeChild(a);
         } catch { alert('Download failed'); }
     };
 
