@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { aiAPI } from '../lib/api';
+import { aiAPI, documentAPI } from '../lib/api';
 
 interface ExtractDataModalProps {
     isOpen: boolean;
     onClose: () => void;
     preSelectedFile?: File | null;
+    documentId?: string;  // NEW: Support for stored documents
+    extractType?: 'auto' | 'invoice' | 'receipt' | 'form' | 'contract';
 }
 
 interface ExtractedData {
@@ -15,18 +17,28 @@ interface ExtractedData {
     rawText?: string;
 }
 
-export default function ExtractDataModal({ isOpen, onClose, preSelectedFile }: ExtractDataModalProps) {
+export default function ExtractDataModal({ 
+    isOpen, 
+    onClose, 
+    preSelectedFile,
+    documentId,  // NEW
+    extractType = 'auto'
+}: ExtractDataModalProps) {
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
+    const [selectedType, setSelectedType] = useState(extractType);
 
     useEffect(() => {
         if (isOpen && preSelectedFile) {
             setFile(preSelectedFile);
             handleExtractFile(preSelectedFile);
+        } else if (isOpen && documentId) {
+            // Auto-extract if documentId is provided
+            handleExtractDocument();
         }
-    }, [isOpen, preSelectedFile]);
+    }, [isOpen, preSelectedFile, documentId]);
 
     if (!isOpen) return null;
 
@@ -73,12 +85,49 @@ export default function ExtractDataModal({ isOpen, onClose, preSelectedFile }: E
         }
     };
 
-    const handleExtract = async () => {
-        if (!file) {
-            setError('Please select a PDF file');
-            return;
+    // NEW: Handle extraction from stored document
+    const handleExtractDocument = async () => {
+        if (!documentId) return;
+        
+        setLoading(true);
+        setError('');
+
+        try {
+            const response = await documentAPI.extractDocumentData(documentId, selectedType);
+            console.log('Extract Data API Response:', response);
+
+            let data;
+            if (response.data.success && response.data.data) {
+                data = response.data.data;
+            } else {
+                data = response.data;
+            }
+
+            setExtractedData(data);
+        } catch (err: any) {
+            console.error('Extraction error:', err);
+            
+            let errorMessage = 'Failed to extract data from document';
+            if (err.response?.data?.error) {
+                errorMessage = err.response.data.error;
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+            
+            setError(errorMessage);
+        } finally {
+            setLoading(false);
         }
-        await handleExtractFile(file);
+    };
+
+    const handleExtract = async () => {
+        if (documentId) {
+            await handleExtractDocument();
+        } else if (file) {
+            await handleExtractFile(file);
+        } else {
+            setError('Please select a PDF file');
+        }
     };
 
     const handleReset = () => {
@@ -114,7 +163,7 @@ export default function ExtractDataModal({ isOpen, onClose, preSelectedFile }: E
                 <div className="space-y-4">
                     {!extractedData ? (
                         <>
-                            {!preSelectedFile && (
+                            {!preSelectedFile && !documentId && (
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Select PDF file
@@ -128,6 +177,26 @@ export default function ExtractDataModal({ isOpen, onClose, preSelectedFile }: E
                                     <p className="text-xs text-slate-500 mt-2">
                                         AI will extract structured data from invoices, receipts, forms, and more
                                     </p>
+                                </div>
+                            )}
+
+                            {/* Document Type Selector */}
+                            {documentId && (
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Document Type
+                                    </label>
+                                    <select
+                                        value={selectedType}
+                                        onChange={(e) => setSelectedType(e.target.value as any)}
+                                        className="block w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                    >
+                                        <option value="auto">Auto-detect</option>
+                                        <option value="invoice">Invoice</option>
+                                        <option value="receipt">Receipt</option>
+                                        <option value="form">Form</option>
+                                        <option value="contract">Contract</option>
+                                    </select>
                                 </div>
                             )}
 

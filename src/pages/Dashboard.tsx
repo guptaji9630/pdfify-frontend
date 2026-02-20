@@ -74,6 +74,41 @@ export default function DashboardPage() {
             <main className="container mx-auto px-4 py-8">
                 <h2 className="text-3xl font-bold mb-8">Welcome back, {user.name || 'User'}!</h2>
 
+                {/* Document Management Section */}
+                <div className="mb-8">
+                    <h3 className="text-xl font-semibold mb-4">Document Management</h3>
+                    <div 
+                        onClick={() => navigate('/documents')}
+                        className="bg-gradient-to-br from-blue-600 to-purple-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow cursor-pointer text-white"
+                    >
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="text-4xl mb-4">📁</div>
+                                <h3 className="text-2xl font-bold mb-2">My Documents</h3>
+                                <p className="text-white/90 mb-4">
+                                    Manage, edit, sign, and organize all your documents in one place
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                                        ✓ Upload & Create
+                                    </span>
+                                    <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                                        ✓ Digital Signatures
+                                    </span>
+                                    <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                                        ✓ Version Control
+                                    </span>
+                                    <span className="px-3 py-1 bg-white/20 rounded-full text-sm">
+                                        ✓ Annotations
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="text-6xl">→</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 className="text-xl font-semibold mb-4">PDF Tools</h3>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div 
                         onClick={() => setMergeModalOpen(true)}
