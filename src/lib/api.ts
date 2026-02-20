@@ -29,7 +29,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        // Only redirect to login on 401 if the request had a token
+        // (i.e., it was an authenticated request that failed)
+        // Don't redirect on login/register failures
+        if (error.response?.status === 401 && error.config?.headers?.Authorization) {
             // Token expired or invalid
             localStorage.removeItem('token');
             window.location.href = '/login';
