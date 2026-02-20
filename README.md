@@ -71,9 +71,9 @@ Week 1-2 tasks:
 - [x] Basic project setup
 - [x] Auth pages (Login/Register)
 - [x] Dashboard layout
-- [ ] File uploader component
-- [ ] PDF tool pages (Merge, Compress, Split)
-- [ ] Razorpay payment integration
+- [x] File uploader component
+- [x] PDF tool pages (Merge, Compress, Split)
+- [x] Razorpay payment integration
 
 ## 💡 Tips
 
