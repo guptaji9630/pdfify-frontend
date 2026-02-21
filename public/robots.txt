@@ -1,10 +1,11 @@
 User-agent: *
 Allow: /
+Allow: /login
+Allow: /register
 
-# Block authenticated/private pages from crawlers
+# Block authenticated/private pages — these redirect to /login anyway
 Disallow: /dashboard
 Disallow: /documents
 Disallow: /billing
-Disallow: /signatures
 
 Sitemap: https://pdf.gggoku.tech/sitemap.xml
