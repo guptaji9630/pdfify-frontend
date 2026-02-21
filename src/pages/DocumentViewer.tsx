@@ -5,7 +5,7 @@ import {
     Minus, Image as ImageIcon, PenTool, Trash2, Check, X,
     ChevronLeft, ChevronRight, Layers, Palette, AlignLeft, Loader2,
     ArrowRight, Sparkles, Brain, FileText, List, Globe, Lightbulb,
-    MessageSquare, Copy, ChevronDown, ChevronUp, Tag,
+    MessageSquare, Copy, ChevronDown, ChevronUp, Tag, History, RotateCcw, Clock,
 } from 'lucide-react';
 import { documentAPI, aiAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
@@ -111,6 +111,12 @@ export default function DocumentViewerPage() {
     const [pendingImg, setPendingImg] = useState<File | null>(null);
     const imgInputRef = useRef<HTMLInputElement>(null);
 
+    // ── Version History Panel ──────────────────────────────────────────────
+    const [showVersions, setShowVersions] = useState(false);
+    const [versions, setVersions] = useState<import('../types').DocumentVersion[]>([]);
+    const [versionsLoading, setVersionsLoading] = useState(false);
+    const [restoringVersion, setRestoringVersion] = useState<number | null>(null);
+
     // ── AI Panel ─────────────────────────────────────────────────────────────
     const [showAI, setShowAI] = useState(false);
     const [aiLoading, setAiLoading] = useState<string | null>(null); // which feature is loading
@@ -185,6 +191,37 @@ export default function DocumentViewerPage() {
             setLoading(false);
         }
     }, [id]);
+
+    const loadVersions = useCallback(async () => {
+        if (!id) return;
+        try {
+            setVersionsLoading(true);
+            const res = await documentAPI.getVersions(id);
+            const raw = res.data?.data ?? res.data?.versions ?? res.data ?? [];
+            setVersions(Array.isArray(raw) ? raw : []);
+        } catch (err) {
+            console.error('loadVersions error:', err);
+        } finally {
+            setVersionsLoading(false);
+        }
+    }, [id]);
+
+    const handleRestoreVersion = useCallback(async (versionNumber: number) => {
+        if (!id) return;
+        if (!window.confirm(`Restore version ${versionNumber}? The current document will be replaced.`)) return;
+        try {
+            setRestoringVersion(versionNumber);
+            await documentAPI.restoreVersion(id, versionNumber);
+            await loadDocument();
+            await loadVersions();
+            setShowVersions(false);
+        } catch (err) {
+            console.error('restoreVersion error:', err);
+            alert('Failed to restore version. Please try again.');
+        } finally {
+            setRestoringVersion(null);
+        }
+    }, [id, loadDocument, loadVersions]);
 
     const loadSignatures = useCallback(async () => {
         try {
@@ -616,6 +653,7 @@ export default function DocumentViewerPage() {
     }, []);
 
     useEffect(() => { if (showAI) loadLanguages(); }, [showAI, loadLanguages]);
+    useEffect(() => { if (showVersions) loadVersions(); }, [showVersions, loadVersions]);
 
     const copyText = (text: string) => navigator.clipboard.writeText(text).catch(() => {});
 
@@ -926,6 +964,19 @@ export default function DocumentViewerPage() {
                     <Sparkles className="w-4 h-4" />
                     AI Tools
                     {!hasAI && <span className="text-xs bg-amber-400 text-amber-900 px-1.5 py-0.5 rounded-full font-semibold ml-1">PRO</span>}
+                </button>
+
+                <button
+                    onClick={() => { setShowVersions(v => !v); if (showAI) setShowAI(false); }}
+                    title="Version History"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all text-sm ${
+                        showVersions
+                            ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                >
+                    <History className="w-4 h-4" />
+                    History
                 </button>
 
                 <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium text-sm transition-colors">
@@ -1652,6 +1703,90 @@ export default function DocumentViewerPage() {
                             >
                                 + Manage Signatures
                             </button>
+                        </div>
+                    </aside>
+                )}
+
+                {/* ████ VERSION HISTORY PANEL ████ */}
+                {showVersions && (
+                    <aside className="flex-shrink-0 bg-white border-l border-slate-200 flex flex-col overflow-hidden" style={{ width: 320 }}>
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-teal-50 flex-shrink-0">
+                            <div className="flex items-center gap-2">
+                                <History className="w-4 h-4 text-emerald-600" />
+                                <h3 className="font-semibold text-slate-800 text-sm">Version History</h3>
+                            </div>
+                            <button onClick={() => setShowVersions(false)} className="p-1 rounded-lg hover:bg-white/60 transition-colors">
+                                <X className="w-4 h-4 text-slate-500" />
+                            </button>
+                        </div>
+
+                        {/* Current version banner */}
+                        <div className="px-4 py-3 bg-emerald-50 border-b border-emerald-100 flex-shrink-0">
+                            <p className="text-xs text-emerald-700 font-medium flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5" />
+                                Current version — last updated {document ? new Date(document.updatedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
+                            </p>
+                        </div>
+
+                        {/* Version list */}
+                        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                            {versionsLoading ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+                                </div>
+                            ) : versions.length === 0 ? (
+                                <div className="text-center py-12 px-4">
+                                    <History className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                                    <p className="text-sm font-medium text-slate-500">No previous versions</p>
+                                    <p className="text-xs text-slate-400 mt-1">Each time you save your edits, a new version is created here.</p>
+                                </div>
+                            ) : (
+                                versions
+                                    .slice()
+                                    .sort((a, b) => b.versionNumber - a.versionNumber)
+                                    .map((v) => (
+                                        <div
+                                            key={v.id}
+                                            className="bg-slate-50 border border-slate-200 rounded-xl p-3 hover:border-emerald-300 hover:bg-emerald-50/40 transition-all group"
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-1.5 mb-0.5">
+                                                        <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-md">
+                                                            v{v.versionNumber}
+                                                        </span>
+                                                        <span className="text-xs text-slate-500">
+                                                            {new Date(v.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-slate-400">
+                                                        {new Date(v.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                                        {' · '}{(v.size / 1024).toFixed(0)} KB
+                                                    </p>
+                                                    {v.changeNote && (
+                                                        <p className="text-xs text-slate-600 mt-1 italic">"{v.changeNote}"</p>
+                                                    )}
+                                                </div>
+                                                <button
+                                                    onClick={() => handleRestoreVersion(v.versionNumber)}
+                                                    disabled={restoringVersion !== null}
+                                                    title={`Restore version ${v.versionNumber}`}
+                                                    className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all disabled:opacity-50"
+                                                >
+                                                    {restoringVersion === v.versionNumber
+                                                        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                        : <RotateCcw className="w-3.5 h-3.5" />}
+                                                    Restore
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                            )}
+                        </div>
+
+                        <div className="px-4 py-3 border-t border-slate-200 flex-shrink-0">
+                            <p className="text-xs text-slate-400 text-center">Restoring a version replaces the current file.</p>
                         </div>
                     </aside>
                 )}
