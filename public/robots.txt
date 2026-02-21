@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Block authenticated/private pages from crawlers
+Disallow: /dashboard
+Disallow: /documents
+Disallow: /billing
+Disallow: /signatures
+
+Sitemap: https://pdf.gggoku.tech/sitemap.xml
