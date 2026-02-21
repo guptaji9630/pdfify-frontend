@@ -1,6 +1,7 @@
 # PDFify Frontend
 
 > Modern React frontend for PDFify - PDF Tools SaaS
+<img width="1498" height="784" alt="image" src="https://github.com/user-attachments/assets/c910fb0e-69f5-4cc0-a66b-37fb01e6040e" />
 
 ## 🚀 Features
 
