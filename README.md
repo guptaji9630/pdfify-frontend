@@ -1,15 +1,15 @@
 # PDFify Frontend
 
 > Modern React frontend for PDFify - PDF Tools SaaS
+<img width="1498" height="784" alt="image" src="https://github.com/user-attachments/assets/c910fb0e-69f5-4cc0-a66b-37fb01e6040e" />
 
 ## 🚀 Features
 
-- **React 18** with TypeScript
-- **Vite** for blazing-fast development
-- **TailwindCSS** + **Shadcn/ui** for beautiful UI
-- **React Query** for data fetching
-- **Zustand** for state management
-- **React Router** for navigation
+- All-in-one document solution
+- Reduced dependency on multiple tools
+- Faster document workflows
+- Mobile-first accessibility
+- Monetisation via premium subscriptions
 
 ## 📋 Prerequisites
 
@@ -64,16 +64,6 @@ npx shadcn-ui@latest add dialog
 - `pnpm build` - Build for production
 - `pnpm preview` - Preview production build
 - `pnpm lint` - Run ESLint
-
-## 🎯 Next Steps
-
-Week 1-2 tasks:
-- [x] Basic project setup
-- [x] Auth pages (Login/Register)
-- [x] Dashboard layout
-- [x] File uploader component
-- [x] PDF tool pages (Merge, Compress, Split)
-- [x] Razorpay payment integration
 
 ## 💡 Tips
 
