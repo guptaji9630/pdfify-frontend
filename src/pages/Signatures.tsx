@@ -168,7 +168,7 @@ export default function SignaturesPage() {
                         {signatures.map((signature) => (
                             <div
                                 key={signature.id}
-                                className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden ${
+                                className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden ${
                                     signature.isDefault ? 'ring-2 ring-blue-500' : ''
                                 }`}
                             >

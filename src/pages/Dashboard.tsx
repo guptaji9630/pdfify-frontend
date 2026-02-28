@@ -52,24 +52,25 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen">
             <header className="bg-white border-b">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="container mx-auto px-4 py-3 sm:py-4 flex justify-between items-center gap-2">
+                    <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent shrink-0">
                         PDFify
                     </h1>
-                    <div className="flex items-center gap-4">
-                        <span className="text-sm text-slate-600">{user.email}</span>
-                        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                    <div className="flex items-center gap-2 sm:gap-4 flex-wrap justify-end">
+                        {/* Email hidden on small screens to prevent overflow */}
+                        <span className="hidden md:block text-sm text-slate-600 truncate max-w-[160px]">{user.email}</span>
+                        <span className="bg-blue-100 text-blue-800 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium">
                             {user.subscription?.plan || 'FREE'}
                         </span>
                         <button
                             onClick={() => navigate('/billing')}
-                            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                            className="text-xs sm:text-sm text-indigo-600 hover:text-indigo-800 font-medium transition-colors no-tap-highlight whitespace-nowrap"
                         >
                             {user.subscription?.plan === 'FREE' ? 'Upgrade' : 'Manage Plan'}
                         </button>
                         <button
                             onClick={handleLogout}
-                            className="text-slate-600 hover:text-slate-900"
+                            className="text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-colors no-tap-highlight"
                         >
                             Logout
                         </button>
@@ -78,7 +79,7 @@ export default function DashboardPage() {
             </header>
 
             <main className="container mx-auto px-4 py-8">
-                <h2 className="text-3xl font-bold mb-8">Welcome back, {user.name || 'User'}!</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Welcome back, {user.name || 'User'}!</h2>
 
                 {/* Document Management Section */}
                 <div className="mb-8">
@@ -109,7 +110,7 @@ export default function DashboardPage() {
                                     </span>
                                 </div>
                             </div>
-                            <div className="text-6xl">→</div>
+                            <div className="text-3xl sm:text-5xl opacity-70">→</div>
                         </div>
                     </div>
                 </div>

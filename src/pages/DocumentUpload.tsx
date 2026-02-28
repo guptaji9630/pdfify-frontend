@@ -96,7 +96,7 @@ export default function DocumentUploadPage() {
 
                 {/* Header */}
                 <div className="mb-8 text-center">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                    <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
                         Add New Document
                     </h1>
                     <p className="text-slate-600">Upload an existing file or create a new one</p>

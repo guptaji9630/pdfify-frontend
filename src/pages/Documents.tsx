@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { documentAPI } from '../lib/api';
 import { Document, DocumentFilters } from '../types';
 import { Upload, FileText, Filter, Search, Download, Trash2, Eye } from 'lucide-react';
+import { useDebounce } from '../lib/utils';
 
 export default function DocumentsPage() {
     const navigate = useNavigate();
@@ -12,23 +13,37 @@ export default function DocumentsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [showFilters, setShowFilters] = useState(false);
 
-    useEffect(() => {
-        fetchDocuments();
-    }, [filters]);
+    // Debounce filters so rapid changes don't fire multiple requests
+    const debouncedFilters = useDebounce(filters, 400);
+    // Keep a ref to the in-flight AbortController so we can cancel stale requests
+    const abortRef = useRef<AbortController | null>(null);
 
-    const fetchDocuments = async () => {
+    const fetchDocuments = useCallback(async () => {
+        // Cancel any previous in-flight request
+        abortRef.current?.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+
         try {
             setLoading(true);
-            const response = await documentAPI.list(filters);
+            const response = await documentAPI.list(debouncedFilters, controller.signal);
             // Backend: { data: { documents: [...], pagination: {...} } }
             const raw = response.data?.data?.documents ?? response.data?.data ?? response.data ?? [];
             setDocuments(Array.isArray(raw) ? raw : []);
         } catch (error: any) {
+            // Ignore aborted (cancelled) requests — not a real error
+            if (error.code === 'ERR_CANCELED' || error.name === 'CanceledError') return;
             console.error('Error fetching documents:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, [debouncedFilters]);
+
+    useEffect(() => {
+        fetchDocuments();
+        // Cancel any in-flight request on unmount
+        return () => { abortRef.current?.abort(); };
+    }, [fetchDocuments]);
 
     const handleDelete = async (docId: string) => {
         if (!confirm('Are you sure you want to delete this document?')) return;
@@ -98,7 +113,7 @@ export default function DocumentsPage() {
 
                 {/* Actions Bar */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                    <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                    <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
                         {/* Search */}
                         <div className="relative flex-1 w-full lg:w-auto">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
@@ -114,7 +129,7 @@ export default function DocumentsPage() {
                         {/* Filter Button */}
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
+                            className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors no-tap-highlight ${
                                 showFilters
                                     ? 'border-blue-500 bg-blue-50 text-blue-600'
                                     : 'border-slate-200 hover:border-slate-300'
@@ -127,7 +142,7 @@ export default function DocumentsPage() {
                         {/* Upload Button */}
                         <button
                             onClick={() => navigate('/documents/upload')}
-                            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-blue-500/30"
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-blue-500/30 no-tap-highlight"
                         >
                             <Upload className="w-5 h-5" />
                             Upload
@@ -226,7 +241,7 @@ export default function DocumentsPage() {
                         {filteredDocuments.map((doc) => (
                             <div
                                 key={doc.id}
-                                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden group"
                             >
                                 {/* Document Thumbnail */}
                                 <div className="h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center relative">
@@ -302,14 +317,14 @@ export default function DocumentsPage() {
                                         </button>
                                         <button
                                             onClick={() => handleDownload(doc.id, doc.title)}
-                                            className="px-3 py-2 border-2 border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                                            className="px-3 py-2 border-2 border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                                             title="Download"
                                         >
                                             <Download className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(doc.id)}
-                                            className="px-3 py-2 border-2 border-slate-200 rounded-lg hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-all"
+                                            className="px-3 py-2 border-2 border-slate-200 rounded-lg hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
                                             title="Delete"
                                         >
                                             <Trash2 className="w-4 h-4" />

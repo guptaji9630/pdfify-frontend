@@ -52,8 +52,8 @@ interface PageInfo {
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-/** Width we render each page at (CSS px). A4 at ~96 DPI */
-const VIEWER_WIDTH = 794;
+/** Maximum render width for the PDF page (CSS px). A4 at ~96 DPI */
+const MAX_VIEWER_WIDTH = 794;
 const HANDLE_PX = 8;
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -148,10 +148,32 @@ export default function DocumentViewerPage() {
     const [aiTab, setAiTab] = useState<'classify' | 'summary' | 'actions' | 'qa' | 'extract' | 'translate'>('summary');
 
     const overlayRef = useRef<HTMLDivElement>(null);
+    // Ref for the scrollable viewer container — used by ResizeObserver
+    const viewerContainerRef = useRef<HTMLElement>(null);
+
+    // ── Responsive viewer width ───────────────────────────────────────────────
+    // Initialise from window so the first render is already correct on mobile
+    const [viewerWidth, setViewerWidth] = useState<number>(
+        () => Math.min(typeof window !== 'undefined' ? window.innerWidth - 48 : MAX_VIEWER_WIDTH, MAX_VIEWER_WIDTH)
+    );
+
+    useEffect(() => {
+        const el = viewerContainerRef.current;
+        if (!el) return;
+        const ro = new ResizeObserver((entries) => {
+            const w = entries[0]?.contentRect.width;
+            if (w) setViewerWidth(Math.min(Math.floor(w - 32), MAX_VIEWER_WIDTH));
+        });
+        ro.observe(el);
+        // Capture current width immediately in case ResizeObserver fires late
+        const initialW = el.getBoundingClientRect().width;
+        if (initialW > 0) setViewerWidth(Math.min(Math.floor(initialW - 32), MAX_VIEWER_WIDTH));
+        return () => ro.disconnect();
+    }, []);
 
     // ── Derived ──────────────────────────────────────────────────────────────
     const pageInfo: PageInfo = pages.find(p => p.pageNumber === currentPage) ?? { pageNumber: 1, width: 595, height: 842 };
-    const scale = VIEWER_WIDTH / pageInfo.width;
+    const scale = viewerWidth / pageInfo.width;
     const viewerH = Math.round(pageInfo.height * scale);
     const totalPages = document?.pageCount || pages.length || 1;
 
@@ -909,7 +931,7 @@ export default function DocumentViewerPage() {
         <div className="flex flex-col h-screen bg-slate-100 overflow-hidden select-none">
 
             {/* ████ TOP BAR ████ */}
-            <header className="flex-shrink-0 flex items-center gap-3 px-4 py-2 bg-white border-b border-slate-200 shadow-sm z-30">
+            <header className="flex-shrink-0 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-white border-b border-slate-200 shadow-sm z-30 overflow-x-auto no-scrollbar">
                 <button onClick={() => navigate('/documents')} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
                     <ArrowLeft className="w-5 h-5 text-slate-600" />
                 </button>
@@ -953,16 +975,17 @@ export default function DocumentViewerPage() {
 
                 <button
                     onClick={() => { setEditorMode(m => { if (m) { setElements([]); setSelectedId(null); } return !m; }); }}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all text-sm ${editorMode ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-colors text-sm shrink-0 ${editorMode ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
                 >
                     <Edit3 className="w-4 h-4" />
-                    {editorMode ? 'Exit Editor' : 'Edit PDF'}
+                    <span className="hidden sm:inline">{editorMode ? 'Exit Editor' : 'Edit PDF'}</span>
+                    <span className="sm:hidden">{editorMode ? 'Exit' : 'Edit'}</span>
                 </button>
 
                 <button
                     onClick={() => hasAI ? setShowAI(m => !m) : undefined}
                     title={hasAI ? 'AI Tools' : 'Upgrade to PRO or BUSINESS to unlock AI features'}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all text-sm ${
+                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-colors text-sm shrink-0 ${
                         !hasAI
                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-60'
                             : showAI
@@ -971,26 +994,26 @@ export default function DocumentViewerPage() {
                     }`}
                 >
                     <Sparkles className="w-4 h-4" />
-                    AI Tools
+                    <span className="hidden sm:inline">AI Tools</span>
                     {!hasAI && <span className="text-xs bg-amber-400 text-amber-900 px-1.5 py-0.5 rounded-full font-semibold ml-1">PRO</span>}
                 </button>
 
                 <button
                     onClick={() => { setShowVersions(v => !v); if (showAI) setShowAI(false); }}
                     title="Version History"
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all text-sm ${
+                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-colors text-sm shrink-0 ${
                         showVersions
                             ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30'
                             : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                     }`}
                 >
                     <History className="w-4 h-4" />
-                    History
+                    <span className="hidden sm:inline">History</span>
                 </button>
 
-                <button onClick={handleDownload} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium text-sm transition-colors">
+                <button onClick={handleDownload} title="Download" className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium text-sm transition-colors shrink-0 no-tap-highlight">
                     <Download className="w-4 h-4" />
-                    Download
+                    <span className="hidden sm:inline">Download</span>
                 </button>
             </header>
 
@@ -1018,7 +1041,7 @@ export default function DocumentViewerPage() {
                                 if (t === 'signature') setShowSigPanel(true);
                                 if (t === 'image') imgInputRef.current?.click();
                             }}
-                            className={`p-2 rounded-lg text-sm transition-all ${activeTool === t ? 'bg-blue-600 text-white shadow shadow-blue-500/30' : 'text-slate-600 hover:bg-slate-100'}`}
+                            className={`p-2 rounded-lg text-sm transition-colors ${activeTool === t ? 'bg-blue-600 text-white shadow shadow-blue-500/30' : 'text-slate-600 hover:bg-slate-100'}`}
                         >
                             {icon}
                         </button>
@@ -1152,14 +1175,14 @@ export default function DocumentViewerPage() {
             {/* ████ MAIN AREA ████ */}
             <div className="flex flex-1 overflow-hidden">
 
-                {/* Page thumbnail strip */}
+                {/* Page thumbnail strip — hidden on small screens to save space */}
                 {totalPages > 1 && (
-                    <aside className="flex-shrink-0 w-20 bg-white border-r border-slate-200 overflow-y-auto py-3 px-2 space-y-2">
+                    <aside className="hidden sm:flex flex-col flex-shrink-0 w-16 sm:w-20 bg-white border-r border-slate-200 overflow-y-auto py-3 px-2 space-y-2">
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
                             <button
                                 key={p}
                                 onClick={() => setCurrentPage(p)}
-                                className={`w-full aspect-[3/4] flex items-center justify-center text-xs font-bold rounded-md border-2 transition-all ${p === currentPage ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-400 hover:border-slate-300'}`}
+                                className={`w-full aspect-[3/4] flex items-center justify-center text-xs font-bold rounded-md border-2 transition-colors no-tap-highlight ${p === currentPage ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-400 hover:border-slate-300'}`}
                             >
                                 {p}
                             </button>
@@ -1168,11 +1191,11 @@ export default function DocumentViewerPage() {
                 )}
 
                 {/* Viewer + overlay */}
-                <main className="flex-1 overflow-auto bg-slate-300 flex flex-col items-center py-8 gap-4">
+                <main ref={viewerContainerRef as React.RefObject<HTMLElement>} className="flex-1 overflow-auto bg-slate-300 flex flex-col items-center py-4 sm:py-8 gap-4 scroll-smooth-mobile">
                     {/* Page container */}
                     <div
                         className="relative bg-white shadow-2xl"
-                        style={{ width: VIEWER_WIDTH, height: viewerH, flexShrink: 0 }}
+                        style={{ width: viewerWidth, height: viewerH, flexShrink: 0 }}
                     >
                         {/* PDF iframe */}
                         <iframe
@@ -1757,7 +1780,7 @@ export default function DocumentViewerPage() {
                                     .map((v) => (
                                         <div
                                             key={v.id}
-                                            className="bg-slate-50 border border-slate-200 rounded-xl p-3 hover:border-emerald-300 hover:bg-emerald-50/40 transition-all group"
+                                            className="bg-slate-50 border border-slate-200 rounded-xl p-3 hover:border-emerald-300 hover:bg-emerald-50/40 transition-colors group"
                                         >
                                             <div className="flex items-start justify-between gap-2">
                                                 <div className="min-w-0">
@@ -1781,7 +1804,7 @@ export default function DocumentViewerPage() {
                                                     onClick={() => handleRestoreVersion(v.versionNumber)}
                                                     disabled={restoringVersion !== null}
                                                     title={`Restore version ${v.versionNumber}`}
-                                                    className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all disabled:opacity-50"
+                                                    className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors disabled:opacity-50"
                                                 >
                                                     {restoringVersion === v.versionNumber
                                                         ? <Loader2 className="w-3.5 h-3.5 animate-spin" />

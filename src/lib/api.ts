@@ -3,10 +3,12 @@ import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 /**
- * Axios instance with base configuration
+ * Axios instance with base configuration.
+ * Timeout: 30s for most requests; AI endpoints may override individually.
  */
 export const api = axios.create({
     baseURL: API_URL,
+    timeout: 30_000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -105,6 +107,9 @@ export const pdfAPI = {
 
 // ==================== AI API ====================
 
+/** Timeout for AI operations — LLM inference can be slow on large files */
+const AI_TIMEOUT = 120_000;
+
 export const aiAPI = {
     classify: async (file: File) => {
         const formData = new FormData();
@@ -112,6 +117,7 @@ export const aiAPI = {
 
         const response = await api.post('/api/ai/classify', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: AI_TIMEOUT,
         });
 
         return response.data;
@@ -123,6 +129,7 @@ export const aiAPI = {
 
         const response = await api.post('/api/ai/summarize', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: AI_TIMEOUT,
         });
 
         return response.data;
@@ -134,6 +141,7 @@ export const aiAPI = {
 
         const response = await api.post('/api/ai/extract-data', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: AI_TIMEOUT,
         });
 
         return response.data;
@@ -153,6 +161,7 @@ export const aiAPI = {
         const response = await api.post(`/api/ai/translate?${params.toString()}`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
             responseType: outputFormat === 'pdf' ? 'blob' : 'json',
+            timeout: AI_TIMEOUT,
         });
 
         return response.data;
@@ -164,6 +173,7 @@ export const aiAPI = {
 
         const response = await api.post('/api/ai/executive-summary', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: AI_TIMEOUT,
         });
 
         return response.data;
@@ -175,6 +185,7 @@ export const aiAPI = {
 
         const response = await api.post('/api/ai/action-items', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: AI_TIMEOUT,
         });
 
         return response.data;
@@ -186,6 +197,7 @@ export const aiAPI = {
 
         const response = await api.post(`/api/ai/qa-pairs?count=${count}`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: AI_TIMEOUT,
         });
 
         return response.data;
@@ -198,6 +210,7 @@ export const aiAPI = {
         const response = await api.post('/api/ai/smart-compress', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
             responseType: 'blob',
+            timeout: AI_TIMEOUT,
         });
 
         return response.data;
@@ -210,6 +223,7 @@ export const aiAPI = {
 };
 
 // ==================== Billing API ====================
+
 
 export const billingAPI = {
     /** Public — load plan details for pricing page */
@@ -263,7 +277,7 @@ export const documentAPI = {
         });
     },
     
-    list: (filters?: { status?: string; type?: string; tags?: string; search?: string; page?: number; limit?: number }) => {
+    list: (filters?: { status?: string; type?: string; tags?: string; search?: string; page?: number; limit?: number }, signal?: AbortSignal) => {
         const params = new URLSearchParams();
         if (filters?.status) params.append('status', filters.status);
         if (filters?.type) params.append('type', filters.type);
@@ -272,7 +286,7 @@ export const documentAPI = {
         if (filters?.page) params.append('page', String(filters.page));
         if (filters?.limit) params.append('limit', String(filters.limit));
         const qs = params.toString();
-        return api.get(`/api/documents${qs ? `?${qs}` : ''}`);
+        return api.get(`/api/documents${qs ? `?${qs}` : ''}`, { signal });
     },
     
     getById: (id: string) => api.get(`/api/documents/${id}`),
@@ -368,32 +382,32 @@ export const documentAPI = {
         api.post(`/api/documents/${docId}/annotations/burn`, {}),
     
     // ==================== AI Features on Stored Documents ====================
-    
+
     // AI: Classify document type
-    classifyDocument: (docId: string) => 
-        api.post(`/api/documents/${docId}/ai/classify`, {}),
-    
+    classifyDocument: (docId: string) =>
+        api.post(`/api/documents/${docId}/ai/classify`, {}, { timeout: AI_TIMEOUT }),
+
     // AI: Summarize document
     summarizeDocument: (docId: string, length: 'short' | 'medium' | 'long' = 'medium') =>
-        api.post(`/api/documents/${docId}/ai/summarize`, { length }),
-    
+        api.post(`/api/documents/${docId}/ai/summarize`, { length }, { timeout: AI_TIMEOUT }),
+
     // AI: Executive summary
-    executiveSummary: (docId: string) => 
-        api.post(`/api/documents/${docId}/ai/executive-summary`, {}),
-    
+    executiveSummary: (docId: string) =>
+        api.post(`/api/documents/${docId}/ai/executive-summary`, {}, { timeout: AI_TIMEOUT }),
+
     // AI: Extract action items
-    extractActionItems: (docId: string) => 
-        api.post(`/api/documents/${docId}/ai/action-items`, {}),
-    
+    extractActionItems: (docId: string) =>
+        api.post(`/api/documents/${docId}/ai/action-items`, {}, { timeout: AI_TIMEOUT }),
+
     // AI: Generate Q&A pairs
-    generateQAPairs: (docId: string, count: number = 5) => 
-        api.post(`/api/documents/${docId}/ai/qa-pairs?count=${count}`, {}),
-    
+    generateQAPairs: (docId: string, count: number = 5) =>
+        api.post(`/api/documents/${docId}/ai/qa-pairs?count=${count}`, {}, { timeout: AI_TIMEOUT }),
+
     // AI: Extract structured data
-    extractDocumentData: (docId: string, type: 'auto' | 'invoice' | 'receipt' | 'form' | 'contract' = 'auto') => 
-        api.post(`/api/documents/${docId}/ai/extract-data?type=${type}`, {}),
-    
+    extractDocumentData: (docId: string, type: 'auto' | 'invoice' | 'receipt' | 'form' | 'contract' = 'auto') =>
+        api.post(`/api/documents/${docId}/ai/extract-data?type=${type}`, {}, { timeout: AI_TIMEOUT }),
+
     // AI: Translate document
-    translateDocument: (docId: string, language: string) => 
-        api.post(`/api/documents/${docId}/ai/translate?language=${language}`, {}),
+    translateDocument: (docId: string, language: string) =>
+        api.post(`/api/documents/${docId}/ai/translate?language=${language}`, {}, { timeout: AI_TIMEOUT }),
 };
