@@ -44,17 +44,19 @@ export default function DocumentsPage() {
 
     /**
      * Download via signed GCS URL returned by the backend.
-     * Backend returns { data: { downloadUrl, filename, expiresIn } } — open it directly.
+     * Response shape: { success, data: { downloadUrl, filename, expiresIn } }
+     * The signed URL is valid for 15 minutes — fetched fresh on every click, never cached.
+     * GCS serves the file with Content-Disposition: attachment automatically.
      */
     const handleDownload = async (docId: string, title: string) => {
         try {
             const response = await documentAPI.download(docId);
-            const downloadUrl = response.data?.data?.downloadUrl;
-            if (!downloadUrl) throw new Error('No download URL returned');
+            // Axios wraps the body in response.data, so the URL is at response.data.data.downloadUrl
+            const downloadUrl: string | undefined = response.data?.data?.downloadUrl;
+            if (!downloadUrl) throw new Error('Server did not return a download URL');
 
             const a = window.document.createElement('a');
             a.href = downloadUrl;
-            a.download = `${title}.pdf`;
             a.target = '_blank';
             a.rel = 'noopener noreferrer';
             window.document.body.appendChild(a);
@@ -62,7 +64,7 @@ export default function DocumentsPage() {
             window.document.body.removeChild(a);
         } catch (error: any) {
             console.error('Error downloading document:', error);
-            alert('Failed to download document');
+            alert(`Failed to download: ${error?.message ?? 'Unknown error'}`);
         }
     };
 

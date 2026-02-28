@@ -666,17 +666,26 @@ export default function DocumentViewerPage() {
         if (!id || !document) return;
         try {
             const res = await documentAPI.download(id);
-            const downloadUrl = res.data?.data?.downloadUrl;
-            if (!downloadUrl) throw new Error('No download URL');
+            // Response shape: { success, data: { downloadUrl, filename, expiresIn } }
+            // Axios wraps the body in res.data, so the URL is at res.data.data.downloadUrl.
+            // Fetch fresh on every click — signed URL is valid for 15 min, never cache.
+            const downloadUrl: string | undefined = res.data?.data?.downloadUrl;
+            if (!downloadUrl) throw new Error('Server did not return a download URL');
+
+            // Signed GCS URL includes Content-Disposition: attachment, so the browser
+            // downloads the file natively. <a> click is used over window.open() to avoid
+            // popup blockers.
             const a = window.document.createElement('a');
             a.href = downloadUrl;
-            a.download = `${document.title}.pdf`;
             a.target = '_blank';
             a.rel = 'noopener noreferrer';
             window.document.body.appendChild(a);
             a.click();
             window.document.body.removeChild(a);
-        } catch { alert('Download failed'); }
+        } catch (err: any) {
+            console.error('Download failed:', err);
+            alert(`Download failed: ${err?.message ?? 'Unknown error'}`);
+        }
     };
 
     // ── Render helpers ────────────────────────────────────────────────────────
