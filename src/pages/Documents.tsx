@@ -48,7 +48,7 @@ export default function DocumentsPage() {
      * The signed URL is valid for 15 minutes — fetched fresh on every click, never cached.
      * GCS serves the file with Content-Disposition: attachment automatically.
      */
-    const handleDownload = async (docId: string, title: string) => {
+    const handleDownload = async (docId: string, _title: string) => {
         try {
             const response = await documentAPI.download(docId);
             // Axios wraps the body in response.data, so the URL is at response.data.data.downloadUrl
