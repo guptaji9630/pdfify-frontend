@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
+import MaintenancePage from '../components/MaintenancePage';
 
+const IS_MAINTENANCE = true;
 export default function RegisterPage() {
+    if (IS_MAINTENANCE) return <MaintenancePage />;
     const navigate = useNavigate();
     const setAuth = useAuthStore((state) => state.setAuth);
 
