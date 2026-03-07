@@ -5,7 +5,7 @@ import { useAuthStore } from '../store/authStore';
 import MaintenancePage from '../components/MaintenancePage';
 
 // 🔴 MAINTENANCE MODE — set to false to re-enable login
-const IS_MAINTENANCE = true;
+const IS_MAINTENANCE = false;
 
 export default function LoginPage() {
     if (IS_MAINTENANCE) return <MaintenancePage />;

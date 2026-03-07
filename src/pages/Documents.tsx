@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { documentAPI } from '../lib/api';
 import { Document, DocumentFilters } from '../types';
-import { Upload, FileText, Filter, Search, Download, Trash2, Eye } from 'lucide-react';
+import { Upload, FileText, Filter, Search, Download, Trash2, Eye, Link2, Check } from 'lucide-react';
 import { useDebounce } from '../lib/utils';
 
 export default function DocumentsPage() {
@@ -12,6 +12,7 @@ export default function DocumentsPage() {
     const [filters, setFilters] = useState<DocumentFilters>({});
     const [searchTerm, setSearchTerm] = useState('');
     const [showFilters, setShowFilters] = useState(false);
+    const [copiedId, setCopiedId] = useState<string | null>(null);
 
     // Debounce filters so rapid changes don't fire multiple requests
     const debouncedFilters = useDebounce(filters, 400);
@@ -81,6 +82,14 @@ export default function DocumentsPage() {
             console.error('Error downloading document:', error);
             alert(`Failed to download: ${error?.message ?? 'Unknown error'}`);
         }
+    };
+
+    const handleCopyPublicLink = (docId: string) => {
+        const shareUrl = `${window.location.origin}/documents/public/${docId}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            setCopiedId(docId);
+            setTimeout(() => setCopiedId(id => (id === docId ? null : id)), 2000);
+        });
     };
 
     const getStatusColor = (status: string) => {
@@ -315,6 +324,17 @@ export default function DocumentsPage() {
                                             <Eye className="w-4 h-4" />
                                             View
                                         </button>
+                                        {doc.isPublic && (
+                                            <button
+                                                onClick={() => handleCopyPublicLink(doc.id)}
+                                                className="px-3 py-2 border-2 border-slate-200 rounded-lg hover:border-green-500 hover:bg-green-50 hover:text-green-600 transition-colors"
+                                                title="Copy public share link"
+                                            >
+                                                {copiedId === doc.id
+                                                    ? <Check className="w-4 h-4 text-green-600" />
+                                                    : <Link2 className="w-4 h-4" />}
+                                            </button>
+                                        )}
                                         <button
                                             onClick={() => handleDownload(doc.id, doc.title)}
                                             className="px-3 py-2 border-2 border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-colors"

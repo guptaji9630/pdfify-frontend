@@ -4,7 +4,7 @@ import { authAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import MaintenancePage from '../components/MaintenancePage';
 
-const IS_MAINTENANCE = true;
+const IS_MAINTENANCE = false;
 export default function RegisterPage() {
     if (IS_MAINTENANCE) return <MaintenancePage />;
     const navigate = useNavigate();

@@ -5,7 +5,7 @@ import {
     Minus, Image as ImageIcon, PenTool, Trash2, Check, X,
     ChevronLeft, ChevronRight, Layers, Palette, AlignLeft, Loader2,
     ArrowRight, Sparkles, Brain, FileText, List, Globe, Lightbulb,
-    MessageSquare, Copy, ChevronDown, ChevronUp, Tag, History, RotateCcw, Clock,
+    MessageSquare, Copy, ChevronDown, ChevronUp, Tag, History, RotateCcw, Clock, Link2,
 } from 'lucide-react';
 import { documentAPI, aiAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
@@ -73,6 +73,7 @@ export default function DocumentViewerPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [iframeKey, setIframeKey] = useState(0);
+    const [shareLinkCopied, setShareLinkCopied] = useState(false);
 
     // ── Editor ───────────────────────────────────────────────────────────────
     const [editorMode, setEditorMode] = useState(false);
@@ -1015,6 +1016,25 @@ export default function DocumentViewerPage() {
                     <Download className="w-4 h-4" />
                     <span className="hidden sm:inline">Download</span>
                 </button>
+
+                {/* Share link — only when the document is public */}
+                {document.isPublic && (
+                    <button
+                        onClick={() => {
+                            const shareUrl = `${window.location.origin}/documents/public/${document.id}`;
+                            navigator.clipboard.writeText(shareUrl).then(() => {
+                                setShareLinkCopied(true);
+                                setTimeout(() => setShareLinkCopied(false), 2000);
+                            });
+                        }}
+                        title="Copy public share link"
+                        className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 font-medium text-sm transition-colors shrink-0 no-tap-highlight"
+                    >
+                        {shareLinkCopied
+                            ? <><Check className="w-4 h-4" /><span className="hidden sm:inline">Copied!</span></>
+                            : <><Link2 className="w-4 h-4" /><span className="hidden sm:inline">Share</span></>}
+                    </button>
+                )}
             </header>
 
             {/* ████ EDITOR TOOLBAR ████ */}

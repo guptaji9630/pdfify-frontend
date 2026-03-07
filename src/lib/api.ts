@@ -411,3 +411,64 @@ export const documentAPI = {
     translateDocument: (docId: string, language: string) =>
         api.post(`/api/documents/${docId}/ai/translate?language=${language}`, {}, { timeout: AI_TIMEOUT }),
 };
+
+// ==================== Public Document API (no auth required) ====================
+
+/**
+ * Fetch and interact with publicly-shared documents.
+ * All requests deliberately omit the Authorization header.
+ */
+export const publicDocumentAPI = {
+    /**
+     * GET /api/documents/public/:documentId
+     * Returns: { document, access: { canEdit, canTranslate }, viewUrl }
+     * viewUrl is a signed GCS URL valid for ~15 minutes.
+     */
+    getPublic: async (documentId: string) => {
+        const res = await fetch(`${API_URL}/api/documents/public/${documentId}`);
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body?.error ?? `HTTP ${res.status}`);
+        }
+        return res.json() as Promise<{
+            success: boolean;
+            data: {
+                document: import('../types').Document;
+                access: { canEdit: boolean; canTranslate: boolean };
+                viewUrl: string;
+            };
+        }>;
+    },
+
+    /**
+     * POST /api/documents/public/:documentId/ai/translate?language=...
+     * No Authorization header.
+     */
+    translatePublic: async (documentId: string, language: string) => {
+        const res = await fetch(
+            `${API_URL}/api/documents/public/${documentId}/ai/translate?language=${encodeURIComponent(language)}`,
+            { method: 'POST' },
+        );
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body?.error ?? `HTTP ${res.status}`);
+        }
+        return res.json();
+    },
+
+    /**
+     * GET /api/documents/public/:documentId/download
+     * Returns: { data: { downloadUrl } }
+     */
+    downloadPublic: async (documentId: string) => {
+        const res = await fetch(`${API_URL}/api/documents/public/${documentId}/download`);
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body?.error ?? `HTTP ${res.status}`);
+        }
+        const json = await res.json();
+        const downloadUrl: string | undefined = json?.data?.downloadUrl;
+        if (!downloadUrl) throw new Error('Server did not return a download URL');
+        window.open(downloadUrl, '_blank');
+    },
+};

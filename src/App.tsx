@@ -13,6 +13,7 @@ const DashboardPage = lazy(() => import('./pages/Dashboard'));
 const DocumentsPage = lazy(() => import('./pages/Documents'));
 const DocumentUploadPage = lazy(() => import('./pages/DocumentUpload'));
 const DocumentViewerPage = lazy(() => import('./pages/DocumentViewer'));
+const PublicDocumentViewerPage = lazy(() => import('./pages/PublicDocumentViewer'));
 const SignaturesPage = lazy(() => import('./pages/Signatures'));
 const BillingPage = lazy(() => import('./pages/Billing'));
 
@@ -55,6 +56,10 @@ function App() {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/login" element={<AuthRedirect><LoginPage /></AuthRedirect>} />
                         <Route path="/register" element={<AuthRedirect><RegisterPage /></AuthRedirect>} />
+
+                        {/* Public document viewer — no auth required */}
+                        <Route path="/documents/public/:documentId" element={<PublicDocumentViewerPage />} />
+                        <Route path="/view/:documentId" element={<PublicDocumentViewerPage />} />
 
                         {/* Protected routes */}
                         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
