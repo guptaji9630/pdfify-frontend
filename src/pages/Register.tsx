@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../lib/api';
-import { useAuthStore } from '../store/authStore';
 import MaintenancePage from '../components/MaintenancePage';
 import ThemeToggle from '../components/ThemeSwitcher';
 
@@ -9,7 +8,6 @@ const IS_MAINTENANCE = false;
 export default function RegisterPage() {
     if (IS_MAINTENANCE) return <MaintenancePage />;
     const navigate = useNavigate();
-    const setAuth = useAuthStore((state) => state.setAuth);
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -25,10 +23,20 @@ export default function RegisterPage() {
 
         try {
             const response = await authAPI.register(email, password, name);
-            const { token, user } = response.data;
+            const payload = response.data?.data;
+            const otpEmail = payload?.email || email;
+            const resendAvailableInSeconds = payload?.resendAvailableInSeconds || 0;
+            const query = new URLSearchParams({
+                email: otpEmail,
+                resend: String(resendAvailableInSeconds),
+            }).toString();
 
-            setAuth(user, token);
-            navigate('/dashboard');
+            navigate(`/verify-email?${query}`, {
+                state: {
+                    email: otpEmail,
+                    resendAvailableInSeconds,
+                },
+            });
         } catch (err: any) {
             console.error('Registration error:', err);
             // Handle different error response formats

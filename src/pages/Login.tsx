@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { authAPI } from '../lib/api';
+import { authAPI, LoginUnverifiedResponse } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import MaintenancePage from '../components/MaintenancePage';
 import ThemeToggle from '../components/ThemeSwitcher';
@@ -32,6 +32,27 @@ export default function LoginPage() {
             navigate('/dashboard');
         } catch (err: any) {
             console.error('Login error:', err);
+
+            if (err.response?.status === 403) {
+                const unverifiedData = err.response?.data as LoginUnverifiedResponse | undefined;
+                if (unverifiedData?.data?.requiresEmailVerification) {
+                    const otpEmail = unverifiedData.data.email || email;
+                    const resendAvailableInSeconds = unverifiedData.data.resendAvailableInSeconds || 0;
+                    const query = new URLSearchParams({
+                        email: otpEmail,
+                        resend: String(resendAvailableInSeconds),
+                    }).toString();
+
+                    navigate(`/verify-email?${query}`, {
+                        state: {
+                            email: otpEmail,
+                            resendAvailableInSeconds,
+                        },
+                    });
+                    return;
+                }
+            }
+
             // Handle different error response formats
             const errorMessage = 
                 err.response?.data?.error || 

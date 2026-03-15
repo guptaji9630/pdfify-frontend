@@ -8,6 +8,7 @@ import { useThemeStore } from './store/themeStore';
 import HomePage from './pages/Home';
 import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
+import VerifyEmailOtpPage from './pages/VerifyEmailOtp';
 
 // ── Lazy load heavy, authenticated-only pages ─────────────────────────────────
 const DashboardPage = lazy(() => import('./pages/Dashboard'));
@@ -82,6 +83,7 @@ function App() {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/login" element={<AuthRedirect><LoginPage /></AuthRedirect>} />
                         <Route path="/register" element={<AuthRedirect><RegisterPage /></AuthRedirect>} />
+                        <Route path="/verify-email" element={<AuthRedirect><VerifyEmailOtpPage /></AuthRedirect>} />
 
                         {/* Public document viewer — no auth required */}
                         <Route path="/documents/public/:documentId" element={<PublicDocumentViewerPage />} />

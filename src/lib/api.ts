@@ -2,6 +2,55 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+export interface AuthUser {
+    id: string;
+    email: string;
+    name?: string;
+    subscription?: {
+        plan: 'FREE' | 'PRO' | 'BUSINESS';
+        status: string;
+        currentPeriodEnd?: string;
+    };
+}
+
+export interface RegisterResponse {
+    success: boolean;
+    message: string;
+    data: {
+        requiresEmailVerification: boolean;
+        email: string;
+        otpExpiresInSeconds: number;
+        resendAvailableInSeconds: number;
+    };
+}
+
+export interface VerifyEmailOtpResponse {
+    success: boolean;
+    message: string;
+    token: string;
+    user: AuthUser;
+}
+
+export interface ResendEmailOtpResponse {
+    success: boolean;
+    message: string;
+    data: {
+        email: string;
+        otpExpiresInSeconds: number;
+        resendAvailableInSeconds: number;
+    };
+}
+
+export interface LoginUnverifiedResponse {
+    success: false;
+    error: string;
+    data?: {
+        requiresEmailVerification?: boolean;
+        email?: string;
+        resendAvailableInSeconds?: number;
+    };
+}
+
 /**
  * Axios instance with base configuration.
  * Timeout: 30s for most requests; AI endpoints may override individually.
@@ -47,10 +96,16 @@ api.interceptors.response.use(
 
 export const authAPI = {
     register: (email: string, password: string, name?: string) =>
-        api.post('/api/auth/register', { email, password, name }),
+        api.post<RegisterResponse>('/api/auth/register', { email, password, name }),
 
     login: (email: string, password: string) =>
         api.post('/api/auth/login', { email, password }),
+
+    verifyEmailOtp: (email: string, otp: string) =>
+        api.post<VerifyEmailOtpResponse>('/api/auth/verify-email-otp', { email, otp }),
+
+    resendEmailOtp: (email: string) =>
+        api.post<ResendEmailOtpResponse>('/api/auth/resend-email-otp', { email }),
 
     getProfile: () => api.get('/api/auth/profile'),
 };
