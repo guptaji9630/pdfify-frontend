@@ -4,6 +4,7 @@ import { billingAPI, authAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { BillingPlan, BillingSubscription, EnterpriseInfo } from '../types';
 import { Check, Zap, Building2, ArrowLeft, Loader2, Star, AlertCircle, X } from 'lucide-react';
+import ThemeToggle from '../components/ThemeSwitcher';
 
 // Extend window for Razorpay SDK
 declare global {
@@ -183,13 +184,16 @@ export default function BillingPage() {
 
             <div className="max-w-6xl mx-auto px-4 py-10">
                 {/* Back */}
-                <button
-                    onClick={() => navigate('/dashboard')}
-                    className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 mb-8 transition-colors"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                    Back to Dashboard
-                </button>
+                <div className="flex items-center justify-between mb-8">
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                        Back to Dashboard
+                    </button>
+                    <ThemeToggle />
+                </div>
 
                 {/* Header */}
                 <div className="text-center mb-12">

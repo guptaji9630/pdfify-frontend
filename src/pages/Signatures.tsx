@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { documentAPI } from '../lib/api';
 import { Signature } from '../types';
 import { ArrowLeft, Upload, Trash2, Check, PenTool } from 'lucide-react';
+import ThemeToggle from '../components/ThemeSwitcher';
 
 export default function SignaturesPage() {
     const navigate = useNavigate();
@@ -80,13 +81,16 @@ export default function SignaturesPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Header */}
                 <div className="mb-8">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-6 transition-colors"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                        Back
-                    </button>
+                    <div className="flex items-center justify-between mb-6">
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                            Back
+                        </button>
+                        <ThemeToggle />
+                    </div>
 
                     <div className="flex items-center justify-between">
                         <div>

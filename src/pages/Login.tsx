@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import MaintenancePage from '../components/MaintenancePage';
+import ThemeToggle from '../components/ThemeSwitcher';
 
 // 🔴 MAINTENANCE MODE — set to false to re-enable login
 const IS_MAINTENANCE = false;
@@ -44,8 +45,12 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+        <div className="min-h-screen flex flex-col">
+            <div className="flex justify-end p-3">
+                <ThemeToggle />
+            </div>
+            <div className="flex-1 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 w-full max-w-md border border-slate-200 dark:border-slate-700">
                 <h1 className="text-3xl font-bold text-center mb-8">
                     Welcome to{' '}
                     <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -125,6 +130,7 @@ export default function LoginPage() {
                         Sign up
                     </Link>
                 </p>
+            </div>
             </div>
         </div>
     );

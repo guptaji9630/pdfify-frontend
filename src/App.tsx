@@ -2,8 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useAuthStore } from './store/authStore';
-import { useThemeStore, ThemeMode } from './store/themeStore';
-import ThemeSwitcher from './components/ThemeSwitcher';
+import { useThemeStore } from './store/themeStore';
 
 // ── Eager load lightweight pages ─────────────────────────────────────────────
 import HomePage from './pages/Home';
@@ -43,7 +42,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
     const { isAuthenticated } = useAuthStore();
-    const { mode, setMode } = useThemeStore();
+    const { mode } = useThemeStore();
     const [systemPrefersDark, setSystemPrefersDark] = useState<boolean>(() => {
         if (typeof window === 'undefined') return false;
         return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -78,7 +77,6 @@ function App() {
     return (
         <ErrorBoundary>
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-                <ThemeSwitcher mode={mode} resolvedMode={resolvedMode} onModeChange={(next: ThemeMode) => setMode(next)} />
                 <Suspense fallback={<PageLoader />}>
                     <Routes>
                         <Route path="/" element={<HomePage />} />

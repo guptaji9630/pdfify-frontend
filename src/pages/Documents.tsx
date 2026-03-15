@@ -4,6 +4,7 @@ import { documentAPI } from '../lib/api';
 import { Document, DocumentFilters } from '../types';
 import { Upload, FileText, Filter, Search, Download, Trash2, Eye, Link2, Check } from 'lucide-react';
 import { useDebounce } from '../lib/utils';
+import ThemeToggle from '../components/ThemeSwitcher';
 
 export default function DocumentsPage() {
     const navigate = useNavigate();
@@ -113,11 +114,14 @@ export default function DocumentsPage() {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                        My Documents
-                    </h1>
-                    <p className="text-slate-600 dark:text-slate-300">Manage and organize your documents</p>
+                <div className="mb-8 flex items-start justify-between gap-4">
+                    <div>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                            My Documents
+                        </h1>
+                        <p className="text-slate-600 dark:text-slate-300">Manage and organize your documents</p>
+                    </div>
+                    <ThemeToggle />
                 </div>
 
                 {/* Actions Bar */}

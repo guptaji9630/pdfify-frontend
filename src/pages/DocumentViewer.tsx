@@ -10,6 +10,7 @@ import {
 import { documentAPI, aiAPI } from '../lib/api';
 import { useAuthStore } from '../store/authStore';
 import { Document, Signature } from '../types';
+import ThemeToggle from '../components/ThemeSwitcher';
 
 // ─── Local Types ─────────────────────────────────────────────────────────────
 
@@ -950,23 +951,23 @@ export default function DocumentViewerPage() {
     // ── Main UI ───────────────────────────────────────────────────────────────
 
     return (
-        <div className="flex flex-col h-screen bg-slate-100 overflow-hidden select-none">
+        <div className="flex flex-col h-screen bg-slate-100 dark:bg-slate-950 overflow-hidden select-none">
 
             {/* ████ TOP BAR ████ */}
-            <header className="flex-shrink-0 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-white border-b border-slate-200 shadow-sm z-30 overflow-x-auto no-scrollbar">
-                <button onClick={() => navigate('/documents')} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
-                    <ArrowLeft className="w-5 h-5 text-slate-600" />
+            <header className="flex-shrink-0 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 shadow-sm z-30 overflow-x-auto no-scrollbar">
+                <button onClick={() => navigate('/documents')} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <ArrowLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                 </button>
 
                 <div className="flex-1 min-w-0">
-                    <h1 className="text-base font-semibold text-slate-800 truncate">{document.title}</h1>
-                    <p className="text-xs text-slate-400">{document.type} · {totalPages} {totalPages === 1 ? 'page' : 'pages'}</p>
+                    <h1 className="text-base font-semibold text-slate-800 dark:text-slate-100 truncate">{document.title}</h1>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">{document.type} · {totalPages} {totalPages === 1 ? 'page' : 'pages'}</p>
                 </div>
 
                 {/* Page nav */}
-                <div className="flex items-center gap-1 bg-slate-100 rounded-lg px-2 py-1">
-                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage <= 1} className="p-1 rounded hover:bg-white disabled:opacity-40 transition">
-                        <ChevronLeft className="w-4 h-4 text-slate-600" />
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg px-2 py-1">
+                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage <= 1} className="p-1 rounded hover:bg-white dark:hover:bg-slate-700 disabled:opacity-40 transition">
+                        <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                     </button>
                     <input
                         type="number"
@@ -987,17 +988,17 @@ export default function DocumentViewerPage() {
                                 (e.target as HTMLInputElement).blur();
                             }
                         }}
-                        className="w-10 text-center text-sm font-medium text-slate-700 bg-transparent border-none outline-none tabular-nums [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        className="w-10 text-center text-sm font-medium text-slate-700 dark:text-slate-200 bg-transparent border-none outline-none tabular-nums [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
-                    <span className="text-sm text-slate-400 select-none">/ {totalPages}</span>
-                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages} className="p-1 rounded hover:bg-white disabled:opacity-40 transition">
-                        <ChevronRight className="w-4 h-4 text-slate-600" />
+                    <span className="text-sm text-slate-400 dark:text-slate-500 select-none">/ {totalPages}</span>
+                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages} className="p-1 rounded hover:bg-white dark:hover:bg-slate-700 disabled:opacity-40 transition">
+                        <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                     </button>
                 </div>
 
                 <button
                     onClick={() => { setEditorMode(m => { if (m) { setElements([]); setSelectedId(null); } return !m; }); }}
-                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-colors text-sm shrink-0 ${editorMode ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                    className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-colors text-sm shrink-0 ${editorMode ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                 >
                     <Edit3 className="w-4 h-4" />
                     <span className="hidden sm:inline">{editorMode ? 'Exit Editor' : 'Edit PDF'}</span>
@@ -1009,10 +1010,10 @@ export default function DocumentViewerPage() {
                     title={hasAI ? 'AI Tools' : 'Upgrade to PRO or BUSINESS to unlock AI features'}
                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-colors text-sm shrink-0 ${
                         !hasAI
-                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-60'
+                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed opacity-60'
                             : showAI
                                 ? 'bg-violet-600 text-white shadow-md shadow-violet-500/30'
-                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                 >
                     <Sparkles className="w-4 h-4" />
@@ -1026,14 +1027,14 @@ export default function DocumentViewerPage() {
                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-colors text-sm shrink-0 ${
                         showVersions
                             ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30'
-                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                     }`}
                 >
                     <History className="w-4 h-4" />
                     <span className="hidden sm:inline">History</span>
                 </button>
 
-                <button onClick={handleDownload} title="Download" className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium text-sm transition-colors shrink-0 no-tap-highlight">
+                <button onClick={handleDownload} title="Download" className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 font-medium text-sm transition-colors shrink-0 no-tap-highlight">
                     <Download className="w-4 h-4" />
                     <span className="hidden sm:inline">Download</span>
                 </button>
@@ -1056,11 +1057,12 @@ export default function DocumentViewerPage() {
                             : <><Link2 className="w-4 h-4" /><span className="hidden sm:inline">Share</span></>}
                     </button>
                 )}
+                <ThemeToggle />
             </header>
 
             {/* ████ EDITOR TOOLBAR ████ */}
             {editorMode && (
-                <div className="flex-shrink-0 flex items-center flex-wrap gap-1.5 px-4 py-2 bg-white border-b border-slate-200 z-20">
+                <div className="flex-shrink-0 flex items-center flex-wrap gap-1.5 px-4 py-2 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 z-20">
                     {/* Tool buttons */}
                     {(
                         [
@@ -1082,16 +1084,16 @@ export default function DocumentViewerPage() {
                                 if (t === 'signature') setShowSigPanel(true);
                                 if (t === 'image') imgInputRef.current?.click();
                             }}
-                            className={`p-2 rounded-lg text-sm transition-colors ${activeTool === t ? 'bg-blue-600 text-white shadow shadow-blue-500/30' : 'text-slate-600 hover:bg-slate-100'}`}
+                            className={`p-2 rounded-lg text-sm transition-colors ${activeTool === t ? 'bg-blue-600 text-white shadow shadow-blue-500/30' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         >
                             {icon}
                         </button>
                     ))}
 
-                    <div className="w-px h-6 bg-slate-200 mx-0.5" />
+                    <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-0.5" />
 
                     {/* Stroke color */}
-                    <label title="Stroke / text color" className="flex items-center gap-1 text-xs text-slate-600 cursor-pointer">
+                    <label title="Stroke / text color" className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 cursor-pointer">
                         <Palette className="w-3.5 h-3.5" />
                         <input
                             type="color"
@@ -1105,7 +1107,7 @@ export default function DocumentViewerPage() {
                     </label>
 
                     {/* Fill color */}
-                    <label title="Fill color" className="flex items-center gap-1 text-xs text-slate-600 cursor-pointer">
+                    <label title="Fill color" className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 cursor-pointer">
                         <span>Fill</span>
                         <input
                             type="color"
@@ -1119,12 +1121,12 @@ export default function DocumentViewerPage() {
                         <button
                             title="No fill"
                             onClick={() => { setToolFill('transparent'); if (selectedId) setElements(prev => prev.map(el => el.id === selectedId ? { ...el, fillColor: 'transparent' } : el)); }}
-                            className="text-xs px-1 bg-slate-100 rounded hover:bg-slate-200"
+                            className="text-xs px-1 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
                         >∅</button>
                     </label>
 
                     {/* Font size */}
-                    <label title="Font size" className="flex items-center gap-1 text-xs text-slate-600">
+                    <label title="Font size" className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
                         <AlignLeft className="w-3.5 h-3.5" />
                         <input
                             type="number"
@@ -1135,13 +1137,13 @@ export default function DocumentViewerPage() {
                                 setToolFontSize(v);
                                 if (selectedId) setElements(prev => prev.map(el => el.id === selectedId ? { ...el, fontSize: v } : el));
                             }}
-                            className="w-12 text-xs border border-slate-200 rounded px-1 py-0.5 text-center"
+                            className="w-12 text-xs border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded px-1 py-0.5 text-center"
                         />
                         <span>pt</span>
                     </label>
 
                     {/* Line width */}
-                    <label title="Line width" className="flex items-center gap-1 text-xs text-slate-600">
+                    <label title="Line width" className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400">
                         <Minus className="w-3.5 h-3.5" />
                         <input
                             type="range" min={1} max={12}
@@ -1191,7 +1193,7 @@ export default function DocumentViewerPage() {
 
                     {/* Clear canvas */}
                     {elements.length > 0 && (
-                        <button onClick={() => { setElements([]); setSelectedId(null); }} className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg text-xs transition-colors" title="Clear all elements">
+                        <button onClick={() => { setElements([]); setSelectedId(null); }} className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-xs transition-colors" title="Clear all elements">
                             <X className="w-4 h-4" />
                         </button>
                     )}
@@ -1218,12 +1220,12 @@ export default function DocumentViewerPage() {
 
                 {/* Page thumbnail strip — hidden on small screens to save space */}
                 {totalPages > 1 && (
-                    <aside className="hidden sm:flex flex-col flex-shrink-0 w-16 sm:w-20 bg-white border-r border-slate-200 overflow-y-auto py-3 px-2 space-y-2">
+                    <aside className="hidden sm:flex flex-col flex-shrink-0 w-16 sm:w-20 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 overflow-y-auto py-3 px-2 space-y-2">
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
                             <button
                                 key={p}
                                 onClick={() => setCurrentPage(p)}
-                                className={`w-full aspect-[3/4] flex items-center justify-center text-xs font-bold rounded-md border-2 transition-colors no-tap-highlight ${p === currentPage ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-400 hover:border-slate-300'}`}
+                                className={`w-full aspect-[3/4] flex items-center justify-center text-xs font-bold rounded-md border-2 transition-colors no-tap-highlight ${p === currentPage ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:border-slate-300 dark:hover:border-slate-600'}`}
                             >
                                 {p}
                             </button>
@@ -1232,7 +1234,7 @@ export default function DocumentViewerPage() {
                 )}
 
                 {/* Viewer + overlay */}
-                <main ref={viewerContainerRef as React.RefObject<HTMLElement>} className="flex-1 overflow-auto bg-slate-300 flex flex-col items-center py-4 sm:py-8 gap-4 scroll-smooth-mobile">
+                <main ref={viewerContainerRef as React.RefObject<HTMLElement>} className="flex-1 overflow-auto bg-slate-300 dark:bg-slate-950 flex flex-col items-center py-4 sm:py-8 gap-4 scroll-smooth-mobile">
                     {/* Page container */}
                     <div
                         className="relative bg-white overflow-hidden"
@@ -1323,20 +1325,20 @@ export default function DocumentViewerPage() {
 
                 {/* ████ AI PANEL ████ */}
                 {showAI && (
-                    <aside className="flex-shrink-0 bg-white border-l border-slate-200 flex flex-col overflow-hidden" style={{ width: 340 }}>
+                    <aside className="flex-shrink-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden" style={{ width: 340 }}>
                         {/* Header */}
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-gradient-to-r from-violet-50 to-purple-50 flex-shrink-0">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/40 dark:to-purple-950/40 flex-shrink-0">
                             <div className="flex items-center gap-2">
                                 <Sparkles className="w-4 h-4 text-violet-600" />
-                                <h3 className="font-semibold text-slate-800 text-sm">AI Tools</h3>
+                                <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">AI Tools</h3>
                             </div>
                             <button onClick={() => setShowAI(false)} className="p-1 rounded-lg hover:bg-white/60 transition-colors">
-                                <X className="w-4 h-4 text-slate-500" />
+                                <X className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                             </button>
                         </div>
 
                         {/* Tab bar */}
-                        <div className="flex flex-shrink-0 border-b border-slate-200 overflow-x-auto">
+                        <div className="flex flex-shrink-0 border-b border-slate-200 dark:border-slate-700 overflow-x-auto">
                             {([
                                 { key: 'summary', icon: <FileText className="w-3.5 h-3.5" />, label: 'Summary' },
                                 { key: 'classify', icon: <Tag className="w-3.5 h-3.5" />, label: 'Classify' },
@@ -1351,7 +1353,7 @@ export default function DocumentViewerPage() {
                                     className={`flex items-center gap-1 px-3 py-2 text-xs font-medium whitespace-nowrap border-b-2 transition-colors ${
                                         aiTab === tab.key
                                             ? 'border-violet-600 text-violet-700 bg-violet-50'
-                                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                                            : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
                                     }`}
                                 >
                                     {tab.icon}{tab.label}
@@ -1363,7 +1365,7 @@ export default function DocumentViewerPage() {
                         <div className="flex-1 overflow-y-auto p-4 space-y-3">
                             {/* Error */}
                             {aiError && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-xs text-red-700 flex items-start gap-2">
+                                <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2 text-xs text-red-700 dark:text-red-300 flex items-start gap-2">
                                     <X className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
                                     <span>{aiError}</span>
                                 </div>
@@ -1374,8 +1376,8 @@ export default function DocumentViewerPage() {
                                 <div className="space-y-3">
                                     {/* Executive summary quick banner */}
                                     {execSummary && (
-                                        <div className="bg-violet-50 border border-violet-200 rounded-xl p-3 text-xs text-slate-700 leading-relaxed relative">
-                                            <p className="font-semibold text-violet-700 mb-1 flex items-center gap-1"><Lightbulb className="w-3.5 h-3.5" />Executive Summary</p>
+                                        <div className="bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 rounded-xl p-3 text-xs text-slate-700 dark:text-slate-300 leading-relaxed relative">
+                                            <p className="font-semibold text-violet-700 dark:text-violet-300 mb-1 flex items-center gap-1"><Lightbulb className="w-3.5 h-3.5" />Executive Summary</p>
                                             <p>{execSummary}</p>
                                             <button onClick={() => copyText(execSummary)} className="absolute top-2 right-2 p-1 hover:bg-violet-100 rounded"><Copy className="w-3 h-3 text-slate-400" /></button>
                                         </div>
@@ -1386,7 +1388,7 @@ export default function DocumentViewerPage() {
                                         <select
                                             value={summaryLength}
                                             onChange={e => setSummaryLength(e.target.value as any)}
-                                            className="flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1.5"
+                                            className="flex-1 text-xs border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-lg px-2 py-1.5"
                                         >
                                             <option value="short">Short</option>
                                             <option value="medium">Medium</option>
@@ -1413,8 +1415,8 @@ export default function DocumentViewerPage() {
                                     {/* Summary result */}
                                     {summaryResult && (
                                         <div className="space-y-3">
-                                            <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-700 leading-relaxed relative">
-                                                <p className="font-semibold text-slate-800 mb-1.5">Summary</p>
+                                            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 text-xs text-slate-700 dark:text-slate-300 leading-relaxed relative">
+                                                <p className="font-semibold text-slate-800 dark:text-slate-100 mb-1.5">Summary</p>
                                                 <p>{summaryResult.summary}</p>
                                                 <button onClick={() => copyText(summaryResult.summary)} className="absolute top-2 right-2 p-1 hover:bg-slate-100 rounded"><Copy className="w-3 h-3 text-slate-400" /></button>
                                             </div>
@@ -1423,7 +1425,7 @@ export default function DocumentViewerPage() {
                                                 <div>
                                                     <button
                                                         onClick={() => toggleSection('keyPoints')}
-                                                        className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 w-full mb-1.5"
+                                                        className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 w-full mb-1.5"
                                                     >
                                                         {expandedSections['keyPoints'] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                                                         Key Points ({summaryResult.keyPoints.length})
@@ -1431,7 +1433,7 @@ export default function DocumentViewerPage() {
                                                     {expandedSections['keyPoints'] && (
                                                         <ul className="space-y-1">
                                                             {summaryResult.keyPoints.map((pt: string, i: number) => (
-                                                                <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
+                                                                <li key={i} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
                                                                     <span className="w-1.5 h-1.5 rounded-full bg-violet-400 mt-1.5 flex-shrink-0" />
                                                                     {pt}
                                                                 </li>
@@ -1445,7 +1447,7 @@ export default function DocumentViewerPage() {
                                                 <div>
                                                     <button
                                                         onClick={() => toggleSection('entities')}
-                                                        className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 w-full mb-1.5"
+                                                        className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 w-full mb-1.5"
                                                     >
                                                         {expandedSections['entities'] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                                                         Entities
@@ -1455,7 +1457,7 @@ export default function DocumentViewerPage() {
                                                             {Object.entries(summaryResult.entities).map(([key, val]) => (
                                                                 Array.isArray(val) && val.length > 0 && (
                                                                     <div key={key}>
-                                                                        <p className="text-xs font-medium text-slate-500 capitalize mb-1">{key}</p>
+                                                                        <p className="text-xs font-medium text-slate-500 dark:text-slate-400 capitalize mb-1">{key}</p>
                                                                         <div className="flex flex-wrap gap-1">
                                                                             {(val as string[]).map((v, i) => (
                                                                                 <span key={i} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{v}</span>
@@ -1471,9 +1473,9 @@ export default function DocumentViewerPage() {
 
                                             {summaryResult.metadata && (
                                                 <div className="flex gap-2 flex-wrap">
-                                                    {summaryResult.metadata.pageCount && <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-lg">{summaryResult.metadata.pageCount} pages</span>}
-                                                    {summaryResult.metadata.wordCount && <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-lg">{summaryResult.metadata.wordCount} words</span>}
-                                                    {summaryResult.metadata.estimatedReadTime && <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-lg">~{summaryResult.metadata.estimatedReadTime}</span>}
+                                                    {summaryResult.metadata.pageCount && <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-lg">{summaryResult.metadata.pageCount} pages</span>}
+                                                    {summaryResult.metadata.wordCount && <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-lg">{summaryResult.metadata.wordCount} words</span>}
+                                                    {summaryResult.metadata.estimatedReadTime && <span className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-lg">~{summaryResult.metadata.estimatedReadTime}</span>}
                                                 </div>
                                             )}
                                         </div>
@@ -1495,17 +1497,17 @@ export default function DocumentViewerPage() {
 
                                     {classifyResult && (
                                         <div className="space-y-3">
-                                            <div className="bg-slate-50 rounded-xl p-4 text-center">
-                                                <p className="text-2xl font-bold text-violet-700 capitalize mb-1">{classifyResult.type}</p>
-                                                <div className="w-full bg-slate-200 rounded-full h-2 mb-1">
+                                            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 text-center">
+                                                <p className="text-2xl font-bold text-violet-700 dark:text-violet-300 capitalize mb-1">{classifyResult.type}</p>
+                                                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-1">
                                                     <div className="bg-violet-500 h-2 rounded-full transition-all" style={{ width: `${Math.round((classifyResult.confidence ?? 0) * 100)}%` }} />
                                                 </div>
-                                                <p className="text-xs text-slate-500">{Math.round((classifyResult.confidence ?? 0) * 100)}% confidence</p>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">{Math.round((classifyResult.confidence ?? 0) * 100)}% confidence</p>
                                             </div>
 
                                             {classifyResult.suggestions?.length > 0 && (
                                                 <div>
-                                                    <p className="text-xs font-semibold text-slate-600 mb-2">Suggested actions</p>
+                                                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-2">Suggested actions</p>
                                                     <div className="flex flex-wrap gap-1.5">
                                                         {classifyResult.suggestions.map((s: string, i: number) => (
                                                             <span key={i} className="text-xs bg-violet-100 text-violet-700 px-2.5 py-1 rounded-full capitalize">{s.replace(/_/g, ' ')}</span>
@@ -1540,16 +1542,16 @@ export default function DocumentViewerPage() {
 
                                     {actionItems.length > 0 && (
                                         <div className="space-y-1.5">
-                                            <p className="text-xs font-semibold text-slate-600">{actionItems.length} items found</p>
+                                            <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{actionItems.length} items found</p>
                                             {actionItems.map((item, i) => (
-                                                <label key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg hover:bg-slate-50 cursor-pointer group">
+                                                <label key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer group">
                                                     <input
                                                         type="checkbox"
                                                         checked={!!checkedItems[i]}
                                                         onChange={e => setCheckedItems(prev => ({ ...prev, [i]: e.target.checked }))}
                                                         className="mt-0.5 accent-violet-600"
                                                     />
-                                                    <span className={`text-xs leading-relaxed ${checkedItems[i] ? 'line-through text-slate-400' : 'text-slate-700'}`}>{item}</span>
+                                                    <span className={`text-xs leading-relaxed ${checkedItems[i] ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-300'}`}>{item}</span>
                                                 </label>
                                             ))}
                                             <button
@@ -1567,12 +1569,12 @@ export default function DocumentViewerPage() {
                             {aiTab === 'qa' && (
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-2">
-                                        <label className="text-xs text-slate-600 flex items-center gap-1">
+                                        <label className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1">
                                             Count:
                                             <input
                                                 type="number" min={1} max={20} value={qaCount}
                                                 onChange={e => setQaCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 5)))}
-                                                className="w-14 text-xs border border-slate-200 rounded px-1.5 py-1 ml-1"
+                                                className="w-14 text-xs border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded px-1.5 py-1 ml-1"
                                             />
                                         </label>
                                         <button
@@ -1587,19 +1589,19 @@ export default function DocumentViewerPage() {
 
                                     {qaResult.length > 0 && (
                                         <div className="space-y-2">
-                                            <p className="text-xs font-semibold text-slate-600">{qaResult.length} pairs</p>
+                                            <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">{qaResult.length} pairs</p>
                                             {qaResult.map((qa, i) => (
-                                                <div key={i} className="border border-slate-200 rounded-xl overflow-hidden">
+                                                <div key={i} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
                                                     <button
                                                         onClick={() => setOpenQA(openQA === i ? null : i)}
-                                                        className="w-full flex items-start gap-2 p-3 text-left hover:bg-slate-50 transition-colors"
+                                                        className="w-full flex items-start gap-2 p-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                                     >
                                                         <span className="flex-shrink-0 w-5 h-5 rounded-full bg-violet-100 text-violet-700 text-xs font-bold flex items-center justify-center">{i + 1}</span>
-                                                        <span className="text-xs font-medium text-slate-700 flex-1 leading-snug">{qa.question}</span>
+                                                        <span className="text-xs font-medium text-slate-700 dark:text-slate-200 flex-1 leading-snug">{qa.question}</span>
                                                         {openQA === i ? <ChevronUp className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />}
                                                     </button>
                                                     {openQA === i && (
-                                                        <div className="px-3 pb-3 bg-violet-50 text-xs text-slate-600 leading-relaxed border-t border-slate-100">
+                                                        <div className="px-3 pb-3 bg-violet-50 dark:bg-violet-950/30 text-xs text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-700">
                                                             <p className="pt-2">{qa.answer}</p>
                                                         </div>
                                                     )}
@@ -1617,7 +1619,7 @@ export default function DocumentViewerPage() {
                                         <select
                                             value={extractType}
                                             onChange={e => setExtractType(e.target.value as any)}
-                                            className="flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1.5"
+                                            className="flex-1 text-xs border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-lg px-2 py-1.5"
                                         >
                                             {['auto','invoice','receipt','form','contract'].map(t => (
                                                 <option key={t} value={t} className="capitalize">{t.charAt(0).toUpperCase() + t.slice(1)}</option>
@@ -1636,16 +1638,16 @@ export default function DocumentViewerPage() {
                                     {extractResult && (
                                         <div className="space-y-2">
                                             <div className="flex items-center justify-between">
-                                                <p className="text-xs font-semibold text-slate-600">Extracted Data</p>
+                                                <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Extracted Data</p>
                                                 <button onClick={() => copyText(JSON.stringify(extractResult, null, 2))} className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600">
                                                     <Copy className="w-3 h-3" />JSON
                                                 </button>
                                             </div>
-                                            <div className="bg-slate-50 rounded-xl p-3 space-y-1.5">
+                                            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 space-y-1.5">
                                                 {Object.entries(extractResult).filter(([, v]) => v !== null && v !== undefined && !Array.isArray(v) && typeof v !== 'object').map(([k, v]) => (
                                                     <div key={k} className="flex gap-2 text-xs">
-                                                        <span className="font-medium text-slate-500 capitalize min-w-[80px]">{k.replace(/([A-Z])/g, ' $1').trim()}</span>
-                                                        <span className="text-slate-700">{String(v)}</span>
+                                                        <span className="font-medium text-slate-500 dark:text-slate-400 capitalize min-w-[80px]">{k.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                                        <span className="text-slate-700 dark:text-slate-300">{String(v)}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1653,16 +1655,16 @@ export default function DocumentViewerPage() {
                                             {extractResult.lineItems?.length > 0 && (
                                                 <div className="overflow-x-auto">
                                                     <table className="w-full text-xs">
-                                                        <thead><tr className="bg-slate-100">
+                                                        <thead><tr className="bg-slate-100 dark:bg-slate-700">
                                                             {Object.keys(extractResult.lineItems[0]).map(k => (
-                                                                <th key={k} className="px-2 py-1 text-left font-semibold text-slate-600 capitalize">{k}</th>
+                                                                <th key={k} className="px-2 py-1 text-left font-semibold text-slate-600 dark:text-slate-300 capitalize">{k}</th>
                                                             ))}
                                                         </tr></thead>
                                                         <tbody>
                                                             {extractResult.lineItems.map((row: any, i: number) => (
-                                                                <tr key={i} className="border-b border-slate-100">
+                                                                <tr key={i} className="border-b border-slate-100 dark:border-slate-700">
                                                                     {Object.values(row).map((v: any, j) => (
-                                                                        <td key={j} className="px-2 py-1 text-slate-700">{String(v)}</td>
+                                                                        <td key={j} className="px-2 py-1 text-slate-700 dark:text-slate-300">{String(v)}</td>
                                                                     ))}
                                                                 </tr>
                                                             ))}
@@ -1683,7 +1685,7 @@ export default function DocumentViewerPage() {
                                             <select
                                                 value={selectedLang}
                                                 onChange={e => setSelectedLang(e.target.value)}
-                                                className="flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1.5"
+                                                className="flex-1 text-xs border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-lg px-2 py-1.5"
                                             >
                                                 {languages.map(l => <option key={l} value={l}>{l}</option>)}
                                             </select>
@@ -1692,7 +1694,7 @@ export default function DocumentViewerPage() {
                                                 type="text" value={selectedLang}
                                                 onChange={e => setSelectedLang(e.target.value)}
                                                 placeholder="Language name…"
-                                                className="flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1.5"
+                                                className="flex-1 text-xs border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 rounded-lg px-2 py-1.5"
                                             />
                                         )}
                                         <button
@@ -1707,7 +1709,7 @@ export default function DocumentViewerPage() {
 
                                     {translateResult && (
                                         <div className="space-y-2">
-                                            <div className="flex items-center justify-between text-xs text-slate-500">
+                                            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                                                 <span>{translateResult.originalLanguage} → {translateResult.targetLanguage}</span>
                                                 <div className="flex gap-2">
                                                     <span>{translateResult.characterCount?.toLocaleString()} chars</span>
@@ -1728,7 +1730,7 @@ export default function DocumentViewerPage() {
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-700 leading-relaxed max-h-80 overflow-y-auto whitespace-pre-wrap">
+                                            <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 text-xs text-slate-700 dark:text-slate-300 leading-relaxed max-h-80 overflow-y-auto whitespace-pre-wrap">
                                                 {translateResult.translatedText}
                                             </div>
                                         </div>
@@ -1741,19 +1743,19 @@ export default function DocumentViewerPage() {
 
                 {/* ████ SIGNATURE PICKER PANEL ████ */}
                 {showSigPanel && (
-                    <aside className="flex-shrink-0 w-68 bg-white border-l border-slate-200 flex flex-col" style={{ width: 260 }}>
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
-                            <h3 className="font-semibold text-slate-800 text-sm">My Signatures</h3>
+                    <aside className="flex-shrink-0 w-68 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 flex flex-col" style={{ width: 260 }}>
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+                            <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">My Signatures</h3>
                             <button onClick={() => setShowSigPanel(false)} className="p-1 rounded-lg hover:bg-slate-100 transition-colors">
-                                <X className="w-4 h-4 text-slate-500" />
+                                <X className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                             </button>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-3 space-y-2">
                             {signatures.length === 0 ? (
                                 <div className="text-center py-10 text-slate-400">
-                                    <PenTool className="w-12 h-12 mx-auto mb-3 text-slate-200" />
-                                    <p className="text-sm mb-3">No signatures yet</p>
+                                    <PenTool className="w-12 h-12 mx-auto mb-3 text-slate-200 dark:text-slate-700" />
+                                    <p className="text-sm dark:text-slate-400 mb-3">No signatures yet</p>
                                     <button onClick={() => navigate('/documents/signatures')} className="text-sm text-blue-600 hover:underline">
                                         Upload a signature →
                                     </button>
@@ -1762,21 +1764,21 @@ export default function DocumentViewerPage() {
                                 <button
                                     key={sig.id}
                                     onClick={() => { setPendingSig(sig); setShowSigPanel(false); setActiveTool('signature'); }}
-                                    className={`w-full p-3 rounded-xl border-2 transition-all hover:border-blue-400 hover:bg-blue-50 text-left ${pendingSig?.id === sig.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-slate-50'}`}
+                                    className={`w-full p-3 rounded-xl border-2 transition-all text-left ${pendingSig?.id === sig.id ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
                                 >
-                                    <div className="h-10 flex items-center justify-center mb-1.5 bg-white rounded-lg border border-slate-100">
+                                    <div className="h-10 flex items-center justify-center mb-1.5 bg-white dark:bg-slate-700 rounded-lg border border-slate-100 dark:border-slate-600">
                                         <img src={sig.storageUrl || (sig as any).url} alt={sig.name} className="max-h-8 max-w-full object-contain" />
                                     </div>
-                                    <p className="text-xs font-medium text-slate-700 text-center truncate">{sig.name}</p>
+                                    <p className="text-xs font-medium text-slate-700 dark:text-slate-200 text-center truncate">{sig.name}</p>
                                     {sig.isDefault && <p className="text-xs text-center text-blue-500 mt-0.5">✓ Default</p>}
                                 </button>
                             ))}
                         </div>
 
-                        <div className="p-3 border-t border-slate-200">
+                        <div className="p-3 border-t border-slate-200 dark:border-slate-700">
                             <button
                                 onClick={() => navigate('/documents/signatures')}
-                                className="w-full py-2 text-xs text-slate-500 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors"
+                                className="w-full py-2 text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
                             >
                                 + Manage Signatures
                             </button>
@@ -1786,21 +1788,21 @@ export default function DocumentViewerPage() {
 
                 {/* ████ VERSION HISTORY PANEL ████ */}
                 {showVersions && (
-                    <aside className="flex-shrink-0 bg-white border-l border-slate-200 flex flex-col overflow-hidden" style={{ width: 320 }}>
+                    <aside className="flex-shrink-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden" style={{ width: 320 }}>
                         {/* Header */}
-                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-teal-50 flex-shrink-0">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 flex-shrink-0">
                             <div className="flex items-center gap-2">
                                 <History className="w-4 h-4 text-emerald-600" />
-                                <h3 className="font-semibold text-slate-800 text-sm">Version History</h3>
+                                <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-sm">Version History</h3>
                             </div>
                             <button onClick={() => setShowVersions(false)} className="p-1 rounded-lg hover:bg-white/60 transition-colors">
-                                <X className="w-4 h-4 text-slate-500" />
+                                <X className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                             </button>
                         </div>
 
                         {/* Current version banner */}
-                        <div className="px-4 py-3 bg-emerald-50 border-b border-emerald-100 flex-shrink-0">
-                            <p className="text-xs text-emerald-700 font-medium flex items-center gap-1.5">
+                        <div className="px-4 py-3 bg-emerald-50 dark:bg-emerald-950/30 border-b border-emerald-100 dark:border-emerald-900 flex-shrink-0">
+                            <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium flex items-center gap-1.5">
                                 <Clock className="w-3.5 h-3.5" />
                                 Current version — last updated {document ? new Date(document.updatedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                             </p>
@@ -1815,8 +1817,8 @@ export default function DocumentViewerPage() {
                             ) : versions.length === 0 ? (
                                 <div className="text-center py-12 px-4">
                                     <History className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                                    <p className="text-sm font-medium text-slate-500">No previous versions</p>
-                                    <p className="text-xs text-slate-400 mt-1">Each time you save your edits, a new version is created here.</p>
+                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No previous versions</p>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Each time you save your edits, a new version is created here.</p>
                                 </div>
                             ) : (
                                 versions
@@ -1825,7 +1827,7 @@ export default function DocumentViewerPage() {
                                     .map((v) => (
                                         <div
                                             key={v.id}
-                                            className="bg-slate-50 border border-slate-200 rounded-xl p-3 hover:border-emerald-300 hover:bg-emerald-50/40 transition-colors group"
+                                            className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 transition-colors group"
                                         >
                                             <div className="flex items-start justify-between gap-2">
                                                 <div className="min-w-0">
@@ -1833,23 +1835,23 @@ export default function DocumentViewerPage() {
                                                         <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-md">
                                                             v{v.versionNumber}
                                                         </span>
-                                                        <span className="text-xs text-slate-500">
+                                                        <span className="text-xs text-slate-500 dark:text-slate-400">
                                                             {new Date(v.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-slate-400">
+                                                    <p className="text-xs text-slate-400 dark:text-slate-500">
                                                         {new Date(v.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                                                         {' · '}{(v.size / 1024).toFixed(0)} KB
                                                     </p>
                                                     {v.changeNote && (
-                                                        <p className="text-xs text-slate-600 mt-1 italic">"{v.changeNote}"</p>
+                                                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 italic">"{v.changeNote}"</p>
                                                     )}
                                                 </div>
                                                 <button
                                                     onClick={() => handleRestoreVersion(v.versionNumber)}
                                                     disabled={restoringVersion !== null}
                                                     title={`Restore version ${v.versionNumber}`}
-                                                    className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors disabled:opacity-50"
+                                                    className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-colors disabled:opacity-50"
                                                 >
                                                     {restoringVersion === v.versionNumber
                                                         ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1862,8 +1864,8 @@ export default function DocumentViewerPage() {
                             )}
                         </div>
 
-                        <div className="px-4 py-3 border-t border-slate-200 flex-shrink-0">
-                            <p className="text-xs text-slate-400 text-center">Restoring a version replaces the current file.</p>
+                        <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex-shrink-0">
+                            <p className="text-xs text-slate-400 dark:text-slate-500 text-center">Restoring a version replaces the current file.</p>
                         </div>
                     </aside>
                 )}

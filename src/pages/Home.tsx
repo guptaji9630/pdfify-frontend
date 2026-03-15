@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeSwitcher';
 
 export default function HomePage() {
     return (
@@ -10,6 +11,7 @@ export default function HomePage() {
                         PDFify
                     </h1>
                     <nav className="flex items-center gap-2 sm:gap-4">
+                        <ThemeToggle />
                         <Link
                             to="/login"
                             className="text-sm sm:text-base text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors no-tap-highlight"

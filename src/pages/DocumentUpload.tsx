@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { documentAPI } from '../lib/api';
 import { Upload, FileText, X, Plus, ArrowLeft } from 'lucide-react';
+import ThemeToggle from '../components/ThemeSwitcher';
 
 export default function DocumentUploadPage() {
     const navigate = useNavigate();
@@ -86,13 +87,16 @@ export default function DocumentUploadPage() {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Back Button */}
-                <button
-                    onClick={() => navigate('/documents')}
-                    className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 mb-6 transition-colors"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                    Back to Documents
-                </button>
+                <div className="flex items-center justify-between mb-6">
+                    <button
+                        onClick={() => navigate('/documents')}
+                        className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+                    >
+                        <ArrowLeft className="w-5 h-5" />
+                        Back to Documents
+                    </button>
+                    <ThemeToggle />
+                </div>
 
                 {/* Header */}
                 <div className="mb-8 text-center">

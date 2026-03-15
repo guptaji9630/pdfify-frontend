@@ -4,6 +4,7 @@ import {
     Download, Globe, Loader2, FileText, AlertCircle, RefreshCw,
     ChevronDown, ExternalLink,
 } from 'lucide-react';
+import ThemeToggle from '../components/ThemeSwitcher';
 import { publicDocumentAPI } from '../lib/api';
 import { Document } from '../types';
 
@@ -192,6 +193,7 @@ export default function PublicDocumentViewer() {
 
                     {/* Action buttons */}
                     <div className="flex items-center gap-2 flex-shrink-0">
+                        <ThemeToggle />
                         {/* Translate — only when access.canTranslate */}
                         {access.canTranslate && (
                             <button

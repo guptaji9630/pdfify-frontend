@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import ThemeToggle from '../components/ThemeSwitcher';
 import MergePdfModal from '../components/MergePdfModal';
 import CompressPdfModal from '../components/CompressPdfModal';
 import SplitPdfModal from '../components/SplitPdfModal';
@@ -68,6 +69,7 @@ export default function DashboardPage() {
                         >
                             {user.subscription?.plan === 'FREE' ? 'Upgrade' : 'Manage Plan'}
                         </button>
+                        <ThemeToggle />
                         <button
                             onClick={handleLogout}
                             className="text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-colors no-tap-highlight"
