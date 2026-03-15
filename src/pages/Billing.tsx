@@ -157,8 +157,21 @@ export default function BillingPage() {
         BUSINESS: 'from-purple-600 to-fuchsia-700',
     };
 
+    const getStatusTone = (status: string) => {
+        switch (status) {
+            case 'ACTIVE':
+                return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300';
+            case 'CANCELLED':
+                return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
+            case 'EXPIRED':
+                return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
+            default:
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
             {/* Toast */}
             {toast && (
                 <div className={`fixed top-4 right-4 z-50 flex items-center gap-3 px-5 py-4 rounded-xl shadow-xl text-white text-sm font-medium transition-all ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
@@ -172,7 +185,7 @@ export default function BillingPage() {
                 {/* Back */}
                 <button
                     onClick={() => navigate('/dashboard')}
-                    className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-8 transition-colors"
+                    className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 mb-8 transition-colors"
                 >
                     <ArrowLeft className="w-5 h-5" />
                     Back to Dashboard
@@ -183,7 +196,7 @@ export default function BillingPage() {
                     <h1 className="text-5xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
                         Billing &amp; Plans
                     </h1>
-                    <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                    <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
                         Choose the plan that fits your workflow. Upgrade or downgrade at any time.
                     </p>
                 </div>
@@ -201,6 +214,9 @@ export default function BillingPage() {
                                 </p>
                             )}
                         </div>
+                        <span className={`hidden md:inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${getStatusTone(subscription.status)}`}>
+                            {subscription.status}
+                        </span>
                         <button
                             onClick={handleCancel}
                             disabled={cancelling}
@@ -227,7 +243,7 @@ export default function BillingPage() {
                             return (
                                 <div
                                     key={plan.id}
-                                    className={`relative bg-white rounded-2xl shadow-lg overflow-hidden transition-transform hover:-translate-y-1 flex flex-col ${
+                                    className={`relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg overflow-hidden transition-transform hover:-translate-y-1 flex flex-col ${
                                         isCurrent ? 'ring-2 ring-green-500' : ''
                                     } ${isPopular ? 'ring-2 ring-indigo-500 shadow-indigo-200/60 shadow-xl' : ''}`}
                                 >
@@ -249,26 +265,26 @@ export default function BillingPage() {
                                         <div className="flex items-center gap-3 mb-4">
                                             {planIconMap[plan.id] ?? <Star className="w-8 h-8" />}
                                             <div>
-                                                <h3 className="text-xl font-bold text-slate-800">{plan.name}</h3>
-                                                <p className="text-xs text-slate-500 uppercase tracking-wider">{plan.id}</p>
+                                                <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{plan.name}</h3>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{plan.id}</p>
                                             </div>
                                         </div>
 
                                         <div className="mb-6">
                                             {plan.price === 0 ? (
-                                                <span className="text-4xl font-extrabold text-slate-800">Free</span>
+                                                <span className="text-4xl font-extrabold text-slate-800 dark:text-slate-100">Free</span>
                                             ) : (
                                                 <>
-                                                    <span className="text-2xl font-semibold text-slate-500">₹</span>
-                                                    <span className="text-4xl font-extrabold text-slate-800">{plan.price}</span>
-                                                    <span className="text-slate-500 text-sm">/{plan.billingPeriod}</span>
+                                                    <span className="text-2xl font-semibold text-slate-500 dark:text-slate-400">₹</span>
+                                                    <span className="text-4xl font-extrabold text-slate-800 dark:text-slate-100">{plan.price}</span>
+                                                    <span className="text-slate-500 dark:text-slate-400 text-sm">/{plan.billingPeriod}</span>
                                                 </>
                                             )}
                                         </div>
 
                                         <ul className="space-y-2.5 mb-8 flex-1">
                                             {plan.features.map((feat, i) => (
-                                                <li key={i} className="flex items-start gap-2.5 text-sm text-slate-600">
+                                                <li key={i} className="flex items-start gap-2.5 text-sm text-slate-600 dark:text-slate-300">
                                                     <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                                                     {feat}
                                                 </li>
@@ -288,11 +304,11 @@ export default function BillingPage() {
                                                 )}
                                             </button>
                                         ) : isCurrent ? (
-                                            <div className="w-full py-3 rounded-xl font-semibold text-center bg-slate-100 text-slate-500 text-sm">
+                                            <div className="w-full py-3 rounded-xl font-semibold text-center bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 text-sm">
                                                 Your Current Plan
                                             </div>
                                         ) : (
-                                            <div className="w-full py-3 rounded-xl font-semibold text-center bg-slate-100 text-slate-400 text-sm">
+                                            <div className="w-full py-3 rounded-xl font-semibold text-center bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-sm">
                                                 Included
                                             </div>
                                         )}
@@ -304,8 +320,8 @@ export default function BillingPage() {
                 )}
 
                 {/* Feature comparison note */}
-                <div className="bg-white rounded-2xl shadow p-6 mb-12 text-sm text-slate-600">
-                    <h3 className="font-semibold text-slate-800 mb-3">What's included in every plan</h3>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow p-6 mb-12 text-sm text-slate-600 dark:text-slate-300">
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-3">What's included in every plan</h3>
                     <div className="grid md:grid-cols-3 gap-4">
                         <div className="flex items-start gap-2"><Check className="w-4 h-4 text-green-500 mt-0.5" /> PDF Merge, Compress & Split</div>
                         <div className="flex items-start gap-2"><Check className="w-4 h-4 text-green-500 mt-0.5" /> Digital Signature upload & placement</div>
@@ -317,7 +333,7 @@ export default function BillingPage() {
                 </div>
 
                 {/* Enterprise section */}
-                <div className="bg-gradient-to-br from-slate-800 to-slate-900 text-white rounded-2xl p-8 shadow-xl">
+                <div className="bg-gradient-to-br from-slate-800 to-slate-900 dark:from-slate-900 dark:to-slate-950 text-white rounded-2xl p-8 shadow-xl border border-slate-700">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                         <div>
                             <h2 className="text-2xl font-bold mb-2">
@@ -350,37 +366,37 @@ export default function BillingPage() {
             {/* Enterprise contact modal */}
             {showEnterprise && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-                        <div className="flex items-center justify-between p-6 border-b">
-                            <h2 className="text-xl font-bold text-slate-800">Enterprise Enquiry</h2>
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+                            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Enterprise Enquiry</h2>
                             <button
                                 onClick={() => setShowEnterprise(false)}
-                                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                             >
-                                <X className="w-5 h-5 text-slate-500" />
+                                <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                             </button>
                         </div>
 
                         <form onSubmit={handleEnterpriseSubmit} className="p-6 space-y-4">
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Your Name *</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Your Name *</label>
                                     <input
                                         required
                                         value={entForm.name}
                                         onChange={e => setEntForm(p => ({ ...p, name: e.target.value }))}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                        className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                                         placeholder="Rahul Sharma"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Work Email *</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Work Email *</label>
                                     <input
                                         required
                                         type="email"
                                         value={entForm.email}
                                         onChange={e => setEntForm(p => ({ ...p, email: e.target.value }))}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                        className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                                         placeholder="rahul@company.com"
                                     />
                                 </div>
@@ -388,33 +404,33 @@ export default function BillingPage() {
 
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Company *</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Company *</label>
                                     <input
                                         required
                                         value={entForm.company}
                                         onChange={e => setEntForm(p => ({ ...p, company: e.target.value }))}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                        className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                                         placeholder="Acme Corp"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Phone</label>
                                     <input
                                         value={entForm.phone}
                                         onChange={e => setEntForm(p => ({ ...p, phone: e.target.value }))}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                        className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                                         placeholder="+91-9876543210"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Company Size *</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Company Size *</label>
                                 <select
                                     required
                                     value={entForm.employees}
                                     onChange={e => setEntForm(p => ({ ...p, employees: e.target.value }))}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
                                 >
                                     <option value="1-10">1–10 employees</option>
                                     <option value="11-50">11–50 employees</option>
@@ -425,13 +441,13 @@ export default function BillingPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Message *</label>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Message *</label>
                                 <textarea
                                     required
                                     rows={4}
                                     value={entForm.message}
                                     onChange={e => setEntForm(p => ({ ...p, message: e.target.value }))}
-                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"
+                                    className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"
                                     placeholder="Tell us about your use case…"
                                 />
                             </div>

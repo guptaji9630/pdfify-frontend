@@ -1,7 +1,9 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useAuthStore } from './store/authStore';
+import { useThemeStore, ThemeMode } from './store/themeStore';
+import ThemeSwitcher from './components/ThemeSwitcher';
 
 // ── Eager load lightweight pages ─────────────────────────────────────────────
 import HomePage from './pages/Home';
@@ -41,6 +43,31 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
     const { isAuthenticated } = useAuthStore();
+    const { mode, setMode } = useThemeStore();
+    const [systemPrefersDark, setSystemPrefersDark] = useState<boolean>(() => {
+        if (typeof window === 'undefined') return false;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    });
+
+    const resolvedMode = useMemo<'light' | 'dark'>(() => {
+        if (mode === 'system') return systemPrefersDark ? 'dark' : 'light';
+        return mode;
+    }, [mode, systemPrefersDark]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const media = window.matchMedia('(prefers-color-scheme: dark)');
+        const onChange = (e: MediaQueryListEvent) => setSystemPrefersDark(e.matches);
+        media.addEventListener('change', onChange);
+        return () => media.removeEventListener('change', onChange);
+    }, []);
+
+    useEffect(() => {
+        const root = window.document.documentElement;
+        const isDark = resolvedMode === 'dark';
+        root.classList.toggle('dark', isDark);
+        root.style.colorScheme = isDark ? 'dark' : 'light';
+    }, [resolvedMode]);
 
     // Redirect authenticated users away from login/register
     const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
@@ -51,6 +78,7 @@ function App() {
     return (
         <ErrorBoundary>
             <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+                <ThemeSwitcher mode={mode} resolvedMode={resolvedMode} onModeChange={(next: ThemeMode) => setMode(next)} />
                 <Suspense fallback={<PageLoader />}>
                     <Routes>
                         <Route path="/" element={<HomePage />} />

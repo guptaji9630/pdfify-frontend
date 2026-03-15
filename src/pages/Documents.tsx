@@ -110,28 +110,28 @@ export default function DocumentsPage() {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
                         My Documents
                     </h1>
-                    <p className="text-slate-600">Manage and organize your documents</p>
+                    <p className="text-slate-600 dark:text-slate-300">Manage and organize your documents</p>
                 </div>
 
                 {/* Actions Bar */}
-                <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6 mb-6 border border-slate-200 dark:border-slate-700">
                     <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between">
                         {/* Search */}
                         <div className="relative flex-1 w-full lg:w-auto">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 w-5 h-5" />
                             <input
                                 type="text"
                                 placeholder="Search documents..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
 
@@ -140,8 +140,8 @@ export default function DocumentsPage() {
                             onClick={() => setShowFilters(!showFilters)}
                             className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors no-tap-highlight ${
                                 showFilters
-                                    ? 'border-blue-500 bg-blue-50 text-blue-600'
-                                    : 'border-slate-200 hover:border-slate-300'
+                                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300'
+                                    : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600'
                             }`}
                         >
                             <Filter className="w-5 h-5" />
@@ -160,10 +160,10 @@ export default function DocumentsPage() {
 
                     {/* Filters Panel */}
                     {showFilters && (
-                        <div className="mt-6 p-4 bg-slate-50 rounded-xl border border-slate-200 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="mt-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-top-2 duration-300">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Status
                                     </label>
                                     <select
@@ -171,7 +171,7 @@ export default function DocumentsPage() {
                                         onChange={(e) =>
                                             setFilters({ ...filters, status: e.target.value as any })
                                         }
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     >
                                         <option value="">All Statuses</option>
                                         <option value="DRAFT">Draft</option>
@@ -181,7 +181,7 @@ export default function DocumentsPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Type
                                     </label>
                                     <select
@@ -189,7 +189,7 @@ export default function DocumentsPage() {
                                         onChange={(e) =>
                                             setFilters({ ...filters, type: e.target.value as any })
                                         }
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     >
                                         <option value="">All Types</option>
                                         <option value="PDF">PDF</option>
@@ -199,7 +199,7 @@ export default function DocumentsPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Tags
                                     </label>
                                     <input
@@ -209,7 +209,7 @@ export default function DocumentsPage() {
                                         onChange={(e) =>
                                             setFilters({ ...filters, tags: e.target.value })
                                         }
-                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     />
                                 </div>
                             </div>
@@ -231,11 +231,11 @@ export default function DocumentsPage() {
                     </div>
                 ) : filteredDocuments.length === 0 ? (
                     <div className="text-center py-20">
-                        <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-slate-700 mb-2">
+                        <FileText className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                        <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-200 mb-2">
                             No documents found
                         </h3>
-                        <p className="text-slate-500 mb-6">
+                        <p className="text-slate-500 dark:text-slate-400 mb-6">
                             Get started by uploading your first document
                         </p>
                         <button
@@ -250,7 +250,7 @@ export default function DocumentsPage() {
                         {filteredDocuments.map((doc) => (
                             <div
                                 key={doc.id}
-                                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden group"
+                                className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden group border border-slate-200 dark:border-slate-700"
                             >
                                 {/* Document Thumbnail */}
                                 <div className="h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center relative">
@@ -277,21 +277,21 @@ export default function DocumentsPage() {
                                 {/* Document Info */}
                                 <div className="p-6">
                                     <div className="flex items-start justify-between mb-3">
-                                        <h3 className="font-semibold text-lg text-slate-800 line-clamp-2 flex-1">
+                                        <h3 className="font-semibold text-lg text-slate-800 dark:text-slate-100 line-clamp-2 flex-1">
                                             {doc.title}
                                         </h3>
-                                        <span className="ml-2 px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium">
+                                        <span className="ml-2 px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-medium">
                                             {doc.type}
                                         </span>
                                     </div>
 
                                     {doc.description && (
-                                        <p className="text-sm text-slate-600 mb-3 line-clamp-2">
+                                        <p className="text-sm text-slate-600 dark:text-slate-300 mb-3 line-clamp-2">
                                             {doc.description}
                                         </p>
                                     )}
 
-                                    <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
+                                    <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400 mb-4">
                                         <span>{doc.pageCount} pages</span>
                                         <span>•</span>
                                         <span>{(doc.size / 1024).toFixed(0)} KB</span>
@@ -302,13 +302,13 @@ export default function DocumentsPage() {
                                             {doc.tags.slice(0, 3).map((tag, idx) => (
                                                 <span
                                                     key={idx}
-                                                    className="px-2 py-1 bg-blue-50 text-blue-600 rounded-lg text-xs"
+                                                    className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-lg text-xs"
                                                 >
                                                     {tag}
                                                 </span>
                                             ))}
                                             {doc.tags.length > 3 && (
-                                                <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs">
+                                                <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-xs">
                                                     +{doc.tags.length - 3}
                                                 </span>
                                             )}
@@ -327,7 +327,7 @@ export default function DocumentsPage() {
                                         {doc.isPublic && (
                                             <button
                                                 onClick={() => handleCopyPublicLink(doc.id)}
-                                                className="px-3 py-2 border-2 border-slate-200 rounded-lg hover:border-green-500 hover:bg-green-50 hover:text-green-600 transition-colors"
+                                                className="px-3 py-2 border-2 border-slate-200 dark:border-slate-700 rounded-lg hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/30 hover:text-green-600 dark:text-slate-200 transition-colors"
                                                 title="Copy public share link"
                                             >
                                                 {copiedId === doc.id
@@ -337,14 +337,14 @@ export default function DocumentsPage() {
                                         )}
                                         <button
                                             onClick={() => handleDownload(doc.id, doc.title)}
-                                            className="px-3 py-2 border-2 border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                                            className="px-3 py-2 border-2 border-slate-200 dark:border-slate-700 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:text-slate-200 transition-colors"
                                             title="Download"
                                         >
                                             <Download className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(doc.id)}
-                                            className="px-3 py-2 border-2 border-slate-200 rounded-lg hover:border-red-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                            className="px-3 py-2 border-2 border-slate-200 dark:border-slate-700 rounded-lg hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 dark:text-slate-200 transition-colors"
                                             title="Delete"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -352,7 +352,7 @@ export default function DocumentsPage() {
                                     </div>
 
                                     {/* Footer Info */}
-                                    <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                                    <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                                         <span>
                                             {new Date(doc.createdAt).toLocaleDateString()}
                                         </span>

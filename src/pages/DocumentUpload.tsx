@@ -83,12 +83,12 @@ export default function DocumentUploadPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Back Button */}
                 <button
                     onClick={() => navigate('/documents')}
-                    className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-6 transition-colors"
+                    className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 mb-6 transition-colors"
                 >
                     <ArrowLeft className="w-5 h-5" />
                     Back to Documents
@@ -99,18 +99,18 @@ export default function DocumentUploadPage() {
                     <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
                         Add New Document
                     </h1>
-                    <p className="text-slate-600">Upload an existing file or create a new one</p>
+                    <p className="text-slate-600 dark:text-slate-300">Upload an existing file or create a new one</p>
                 </div>
 
                 {/* Tabs */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                    <div className="flex border-b border-slate-200">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <div className="flex border-b border-slate-200 dark:border-slate-700">
                         <button
                             onClick={() => setActiveTab('upload')}
                             className={`flex-1 px-6 py-4 font-semibold transition-colors ${
                                 activeTab === 'upload'
                                     ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                                    : 'text-slate-600 hover:bg-slate-50'
+                                    : 'text-slate-600 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
                             }`}
                         >
                             <div className="flex items-center justify-center gap-2">
@@ -123,7 +123,7 @@ export default function DocumentUploadPage() {
                             className={`flex-1 px-6 py-4 font-semibold transition-colors ${
                                 activeTab === 'create'
                                     ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                                    : 'text-slate-600 hover:bg-slate-50'
+                                    : 'text-slate-600 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
                             }`}
                         >
                             <div className="flex items-center justify-center gap-2">
@@ -139,11 +139,11 @@ export default function DocumentUploadPage() {
                             <form onSubmit={handleUpload} className="space-y-6">
                                 {/* File Upload Area */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Select File
                                     </label>
                                     {!file ? (
-                                        <div className="border-2 border-dashed border-slate-300 rounded-xl p-12 text-center hover:border-blue-500 transition-colors cursor-pointer">
+                                        <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-12 text-center hover:border-blue-500 transition-colors cursor-pointer">
                                             <input
                                                 type="file"
                                                 accept=".pdf,.doc,.docx"
@@ -152,27 +152,27 @@ export default function DocumentUploadPage() {
                                                 id="file-upload"
                                             />
                                             <label htmlFor="file-upload" className="cursor-pointer">
-                                                <Upload className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                                                <p className="text-lg font-semibold text-slate-700 mb-2">
+                                                <Upload className="w-16 h-16 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
+                                                <p className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-2">
                                                     Click to upload or drag and drop
                                                 </p>
-                                                <p className="text-sm text-slate-500">
+                                                <p className="text-sm text-slate-500 dark:text-slate-400">
                                                     PDF, DOC, or DOCX (Max 10MB)
                                                 </p>
                                             </label>
                                         </div>
                                     ) : (
-                                        <div className="border-2 border-blue-500 rounded-xl p-6 bg-blue-50">
+                                        <div className="border-2 border-blue-500 rounded-xl p-6 bg-blue-50 dark:bg-blue-900/30">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="p-3 bg-blue-100 rounded-lg">
+                                                    <div className="p-3 bg-blue-100 dark:bg-blue-800/60 rounded-lg">
                                                         <FileText className="w-8 h-8 text-blue-600" />
                                                     </div>
                                                     <div>
-                                                        <p className="font-semibold text-slate-800">
+                                                        <p className="font-semibold text-slate-800 dark:text-slate-100">
                                                             {file.name}
                                                         </p>
-                                                        <p className="text-sm text-slate-500">
+                                                        <p className="text-sm text-slate-500 dark:text-slate-400">
                                                             {(file.size / 1024 / 1024).toFixed(2)} MB
                                                         </p>
                                                     </div>
@@ -191,14 +191,14 @@ export default function DocumentUploadPage() {
 
                                 {/* Title */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Document Title *
                                     </label>
                                     <input
                                         type="text"
                                         value={uploadTitle}
                                         onChange={(e) => setUploadTitle(e.target.value)}
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="My Document"
                                         required
                                     />
@@ -206,14 +206,14 @@ export default function DocumentUploadPage() {
 
                                 {/* Tags */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Tags (comma-separated)
                                     </label>
                                     <input
                                         type="text"
                                         value={uploadTags}
                                         onChange={(e) => setUploadTags(e.target.value)}
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="invoice, contract, 2025"
                                     />
                                 </div>
@@ -227,7 +227,7 @@ export default function DocumentUploadPage() {
                                         onChange={(e) => setIsPublic(e.target.checked)}
                                         className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
                                     />
-                                    <label htmlFor="public-upload" className="text-sm text-slate-700">
+                                    <label htmlFor="public-upload" className="text-sm text-slate-700 dark:text-slate-200">
                                         Make this document public
                                     </label>
                                 </div>
@@ -246,7 +246,7 @@ export default function DocumentUploadPage() {
                             <form onSubmit={handleCreate} className="space-y-6">
                                 {/* Title */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Document Title *
                                     </label>
                                     <input
@@ -255,7 +255,7 @@ export default function DocumentUploadPage() {
                                         onChange={(e) =>
                                             setCreateData({ ...createData, title: e.target.value })
                                         }
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="Untitled Document"
                                         required
                                     />
@@ -263,7 +263,7 @@ export default function DocumentUploadPage() {
 
                                 {/* Description */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Description
                                     </label>
                                     <input
@@ -275,14 +275,14 @@ export default function DocumentUploadPage() {
                                                 description: e.target.value,
                                             })
                                         }
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="Optional description"
                                     />
                                 </div>
 
                                 {/* Type */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Document Type
                                     </label>
                                     <select
@@ -293,7 +293,7 @@ export default function DocumentUploadPage() {
                                                 type: e.target.value as any,
                                             })
                                         }
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
                                         <option value="PDF">PDF</option>
                                         <option value="DOC">DOC</option>
@@ -303,7 +303,7 @@ export default function DocumentUploadPage() {
 
                                 {/* Content */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Initial Content *
                                     </label>
                                     <textarea
@@ -311,7 +311,7 @@ export default function DocumentUploadPage() {
                                         onChange={(e) =>
                                             setCreateData({ ...createData, content: e.target.value })
                                         }
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         rows={10}
                                         placeholder="Start typing your document content..."
                                         required
@@ -320,7 +320,7 @@ export default function DocumentUploadPage() {
 
                                 {/* Tags */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
                                         Tags (comma-separated)
                                     </label>
                                     <input
@@ -329,7 +329,7 @@ export default function DocumentUploadPage() {
                                         onChange={(e) =>
                                             setCreateData({ ...createData, tags: e.target.value })
                                         }
-                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="draft, personal, 2025"
                                     />
                                 </div>
@@ -348,7 +348,7 @@ export default function DocumentUploadPage() {
                                         }
                                         className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
                                     />
-                                    <label htmlFor="public-create" className="text-sm text-slate-700">
+                                    <label htmlFor="public-create" className="text-sm text-slate-700 dark:text-slate-200">
                                         Make this document public
                                     </label>
                                 </div>

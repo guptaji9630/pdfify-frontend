@@ -262,6 +262,12 @@ export const billingAPI = {
 // ==================== Document Management API ====================
 
 export const documentAPI = {
+    // Normalize signature records so UI can rely on storageUrl consistently.
+    normalizeSignature: (sig: any) => ({
+        ...sig,
+        storageUrl: sig?.storageUrl ?? sig?.url ?? '',
+    }),
+
     // Document CRUD
     create: (data: any) => api.post('/api/documents', data),
     
@@ -340,7 +346,24 @@ export const documentAPI = {
         });
     },
     
-    listSignatures: () => api.get('/api/documents/signatures'),
+    listSignatures: async () => {
+        const response = await api.get('/api/documents/signatures');
+
+        const raw = response.data?.data ?? response.data?.signatures ?? response.data ?? [];
+        const normalized = Array.isArray(raw)
+            ? raw.map((sig: any) => documentAPI.normalizeSignature(sig))
+            : [];
+
+        if (Array.isArray(response.data)) {
+            response.data = normalized;
+        } else if (response.data?.data) {
+            response.data.data = normalized;
+        } else if (response.data?.signatures) {
+            response.data.signatures = normalized;
+        }
+
+        return response;
+    },
     
     deleteSignature: (id: string) => api.delete(`/api/documents/signatures/${id}`),
     

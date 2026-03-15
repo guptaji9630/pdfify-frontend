@@ -175,7 +175,7 @@ export default function SignaturesPage() {
                                 {/* Signature Image */}
                                 <div className="h-48 bg-slate-50 flex items-center justify-center p-6 relative">
                                     <img
-                                        src={signature.storageUrl}
+                                        src={signature.storageUrl || (signature as any).url}
                                         alt={signature.name}
                                         className="max-w-full max-h-full object-contain"
                                     />

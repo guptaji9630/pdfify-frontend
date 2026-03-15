@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { documentAPI } from '../lib/api';
-import { Signature, ApiResponse } from '../types';
+import { Signature } from '../types';
 import { PenTool, X, Loader2, Check } from 'lucide-react';
 
 interface SignatureApplicationModalProps {
@@ -38,16 +38,22 @@ export default function SignatureApplicationModal({
         try {
             setLoading(true);
             const response = await documentAPI.listSignatures();
-            const data: ApiResponse<Signature[]> = response.data;
-            if (data.success && data.data) {
-                setSignatures(data.data);
-                // Auto-select default signature
-                const defaultSig = data.data.find((sig) => sig.isDefault);
-                if (defaultSig) {
-                    setSelectedSignature(defaultSig);
-                    setSignatureWidth(defaultSig.width);
-                    setSignatureHeight(defaultSig.height);
-                }
+            const raw = response.data?.data ?? response.data?.signatures ?? response.data ?? [];
+            const normalized: Signature[] = Array.isArray(raw)
+                ? raw.map((sig: any) => ({
+                    ...sig,
+                    storageUrl: sig?.storageUrl ?? sig?.url ?? '',
+                }))
+                : [];
+
+            setSignatures(normalized);
+
+            // Auto-select default signature
+            const defaultSig = normalized.find((sig) => sig.isDefault) ?? normalized[0] ?? null;
+            if (defaultSig) {
+                setSelectedSignature(defaultSig);
+                setSignatureWidth(defaultSig.width);
+                setSignatureHeight(defaultSig.height);
             }
         } catch (err: any) {
             console.error('Failed to fetch signatures:', err);
@@ -145,7 +151,7 @@ export default function SignatureApplicationModal({
                                                 )}
                                             </div>
                                             <img
-                                                src={signature.storageUrl}
+                                                src={signature.storageUrl || (signature as any).url}
                                                 alt={signature.name}
                                                 className="w-full h-20 object-contain bg-white rounded border border-gray-200"
                                             />

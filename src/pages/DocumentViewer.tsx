@@ -19,6 +19,8 @@ type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w';
 interface CanvasElement {
     id: string;
     type: 'text' | 'rectangle' | 'circle' | 'line' | 'arrow' | 'image' | 'signature';
+    /** 1-indexed PDF page number where this element was placed */
+    pageNumber: number;
     /** CSS pixels relative to overlay origin (top-left of the page) */
     x: number;
     y: number;
@@ -39,6 +41,8 @@ interface CanvasElement {
     signatureUrl?: string;
     // State
     committed: boolean;
+    /** CSS-px per PDF-point captured when the element was created */
+    placementScale: number;
 }
 
 interface PageInfo {
@@ -178,19 +182,6 @@ export default function DocumentViewerPage() {
     const viewerH = Math.round(pageInfo.height * scale);
     const totalPages = document?.pageCount || pages.length || 1;
 
-    /**
-     * Convert overlay CSS-px coordinates to PDF points.
-     *  - PDF origin is BOTTOM-LEFT; CSS origin is TOP-LEFT.
-     *  - y = 0 in CSS  →  y = pageHeight in PDF (top of page).
-     */
-    const toPDF = useCallback(
-        (cssX: number, cssY: number) => ({
-            x: Math.round(cssX / scale),
-            y: Math.round((viewerH - cssY) / scale),
-        }),
-        [scale, viewerH],
-    );
-
     // ── Data fetching ────────────────────────────────────────────────────────
 
     const loadDocument = useCallback(async () => {
@@ -269,6 +260,15 @@ export default function DocumentViewerPage() {
     // Changing the page must force the iframe to reload with the new #page fragment
     useEffect(() => {
         setIframeKey(k => k + 1);
+    }, [currentPage]);
+
+    // Editing state is page-scoped; reset transient selection when page changes.
+    useEffect(() => {
+        setSelectedId(null);
+        setEditingId(null);
+        setTextDraft('');
+        setIsDrawing(false);
+        setLiveEl(null);
     }, [currentPage]);
 
     // ── Keyboard shortcuts ───────────────────────────────────────────────────
@@ -463,12 +463,14 @@ export default function DocumentViewerPage() {
     const makeEl = (type: CanvasElement['type'], x: number, y: number, w: number, h: number): CanvasElement => ({
         id: uid(),
         type,
+        pageNumber: currentPage,
         x, y, width: w, height: h,
         color: toolColor,
         fillColor: toolFill,
         lineWidth: toolLineWidth,
         fontSize: toolFontSize,
         committed: false,
+        placementScale: scale,
     });
 
     // ── Place image / signature ───────────────────────────────────────────────
@@ -485,7 +487,11 @@ export default function DocumentViewerPage() {
 
     const placeSig = (cx: number, cy: number) => {
         if (!pendingSig) return;
-        const el: CanvasElement = { ...makeEl('signature', cx - 60, cy - 30, 120, 60), signatureId: pendingSig.id, signatureUrl: pendingSig.storageUrl };
+        const el: CanvasElement = {
+            ...makeEl('signature', cx - 60, cy - 30, 120, 60),
+            signatureId: pendingSig.id,
+            signatureUrl: pendingSig.storageUrl || (pendingSig as any).url,
+        };
         setElements(prev => [...prev, el]);
         setSelectedId(el.id);
         setPendingSig(null);
@@ -506,6 +512,15 @@ export default function DocumentViewerPage() {
     const commitElement = async (el: CanvasElement) => {
         if (!id) return;
 
+        const pageForElement = pages.find(p => p.pageNumber === el.pageNumber)
+            ?? { pageNumber: el.pageNumber, width: 595, height: 842 };
+        const pageScale = viewerWidth / pageForElement.width;
+        const effectiveScale = el.placementScale || pageScale;
+        const toPDFForPage = (cssX: number, cssY: number) => ({
+            x: Math.round(cssX / effectiveScale),
+            y: Math.round(pageForElement.height - (cssY / effectiveScale)),
+        });
+
         // Flush any in-progress text edit so we use the live draft, not stale el.text
         let resolvedText = el.text;
         if (el.type === 'text' && editingId === el.id) {
@@ -525,9 +540,9 @@ export default function DocumentViewerPage() {
         setSaving(true);
         try {
             if (el.type === 'text') {
-                const pd = toPDF(el.x, el.y + (el.height ?? 0));
+                const pd = toPDFForPage(el.x, el.y + (el.height ?? 0));
                 await documentAPI.addText(id, {
-                    pageNumber: currentPage,
+                    pageNumber: el.pageNumber,
                     x: pd.x,
                     y: pd.y,
                     text: resolvedText!,
@@ -535,51 +550,57 @@ export default function DocumentViewerPage() {
                     color: el.color,
                 });
             } else if (el.type === 'rectangle' || el.type === 'circle') {
-                const pd = toPDF(el.x, el.y + el.height);
+                const pd = toPDFForPage(el.x, el.y + el.height);
                 await documentAPI.drawShape(id, {
-                    pageNumber: currentPage,
+                    pageNumber: el.pageNumber,
                     shape: el.type,
-                    x: Math.round(el.x / scale),
+                    x: Math.round(el.x / effectiveScale),
                     y: pd.y,
-                    width: Math.round(el.width / scale),
-                    height: Math.round(el.height / scale),
+                    width: Math.round(el.width / effectiveScale),
+                    height: Math.round(el.height / effectiveScale),
                     color: el.color,
                     fillColor: el.fillColor !== 'transparent' ? el.fillColor : undefined,
                     lineWidth: el.lineWidth,
                 });
             } else if (el.type === 'line' || el.type === 'arrow') {
-                const pd = toPDF(el.x, el.y);
+                const pd = toPDFForPage(el.x, el.y);
                 await documentAPI.drawShape(id, {
-                    pageNumber: currentPage,
+                    pageNumber: el.pageNumber,
                     shape: 'line',
                     x: pd.x,
                     y: pd.y,
-                    width: Math.round(el.width / scale),
-                    height: Math.round(-el.height / scale), // line dy; negate for PDF y flip
+                    width: Math.round(el.width / effectiveScale),
+                    height: Math.round(-el.height / effectiveScale), // line dy; negate for PDF y flip
                     color: el.color,
                     lineWidth: el.lineWidth,
                 });
             } else if (el.type === 'image' && el.imageFile) {
                 const base64 = await fileToBase64(el.imageFile);
-                const pd = toPDF(el.x, el.y + el.height);
+                const pd = toPDFForPage(el.x, el.y + el.height);
                 await documentAPI.addImage(id, {
-                    pageNumber: currentPage,
+                    pageNumber: el.pageNumber,
                     imageBase64: base64,
                     mimeType: el.imageFile.type as 'image/png' | 'image/jpeg',
-                    x: Math.round(el.x / scale),
+                    x: Math.round(el.x / effectiveScale),
                     y: pd.y,
-                    width: Math.round(el.width / scale),
-                    height: Math.round(el.height / scale),
+                    width: Math.round(el.width / effectiveScale),
+                    height: Math.round(el.height / effectiveScale),
                 });
             } else if (el.type === 'signature' && el.signatureId) {
-                const pd = toPDF(el.x, el.y + el.height);
+                const sigW = Math.max(1, Math.round(el.width / effectiveScale));
+                const sigH = Math.max(1, Math.round(el.height / effectiveScale));
+                const rawX = Math.round(el.x / effectiveScale);
+                const rawYTop = Math.round((el.y + el.height) / effectiveScale);
+                const clampedX = Math.max(0, Math.min(pageForElement.width - sigW, rawX));
+                const clampedYFromBottom = Math.max(0, Math.min(pageForElement.height - sigH, pageForElement.height - rawYTop));
+
                 await documentAPI.applySignature(id, {
                     signatureId: el.signatureId,
-                    pageNumber: currentPage,
-                    x: Math.round(el.x / scale),
-                    y: pd.y,
-                    width: Math.round(el.width / scale),
-                    height: Math.round(el.height / scale),
+                    pageNumber: el.pageNumber,
+                    x: clampedX,
+                    y: clampedYFromBottom,
+                    width: sigW,
+                    height: sigH,
                 });
             }
             setElements(prev => prev.map(e => e.id === el.id ? { ...e, committed: true } : e));
@@ -1214,7 +1235,7 @@ export default function DocumentViewerPage() {
                 <main ref={viewerContainerRef as React.RefObject<HTMLElement>} className="flex-1 overflow-auto bg-slate-300 flex flex-col items-center py-4 sm:py-8 gap-4 scroll-smooth-mobile">
                     {/* Page container */}
                     <div
-                        className="relative bg-white shadow-2xl"
+                        className="relative bg-white overflow-hidden"
                         style={{ width: viewerWidth, height: viewerH, flexShrink: 0 }}
                     >
                         {/* PDF iframe */}
@@ -1222,12 +1243,16 @@ export default function DocumentViewerPage() {
                             key={iframeKey}
                             src={document.storageUrl ? `${document.storageUrl}#page=${currentPage}&toolbar=0&navpanes=0&scrollbar=0` : ''}
                             title={document.title}
+                            frameBorder={0}
                             style={{
                                 position: 'absolute',
                                 inset: 0,
                                 width: '100%',
                                 height: '100%',
                                 border: 'none',
+                                outline: 'none',
+                                boxShadow: 'none',
+                                backgroundColor: '#fff',
                                 pointerEvents: editorMode ? 'none' : 'auto',
                             }}
                         />
@@ -1276,7 +1301,7 @@ export default function DocumentViewerPage() {
                                 )}
 
                                 {/* Render all elements */}
-                                {elements.map(el => renderEl(el))}
+                                {elements.filter(el => el.pageNumber === currentPage).map(el => renderEl(el))}
 
                                 {/* Live drawing preview */}
                                 {liveEl && renderEl(liveEl, true)}
@@ -1740,7 +1765,7 @@ export default function DocumentViewerPage() {
                                     className={`w-full p-3 rounded-xl border-2 transition-all hover:border-blue-400 hover:bg-blue-50 text-left ${pendingSig?.id === sig.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-slate-50'}`}
                                 >
                                     <div className="h-10 flex items-center justify-center mb-1.5 bg-white rounded-lg border border-slate-100">
-                                        <img src={sig.storageUrl} alt={sig.name} className="max-h-8 max-w-full object-contain" />
+                                        <img src={sig.storageUrl || (sig as any).url} alt={sig.name} className="max-h-8 max-w-full object-contain" />
                                     </div>
                                     <p className="text-xs font-medium text-slate-700 text-center truncate">{sig.name}</p>
                                     {sig.isDefault && <p className="text-xs text-center text-blue-500 mt-0.5">✓ Default</p>}
